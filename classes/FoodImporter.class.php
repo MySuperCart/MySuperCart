@@ -5,7 +5,8 @@
 class FoodImporter
 {
 	private $API_DOMAIN = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com/api";
-	private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/";
+	private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
+	// private $SOCKET_API = "http://localhost:9001/news";
 
 	// Initialize a file URL to the variable
 	private $URLS = array(
@@ -94,25 +95,15 @@ class FoodImporter
 
 	function __construct()
 	{
-		$this->emit([
-		    'name' => 'Goku',
-		    'age' => '23',
-		    'address' => 'Sudbury, On, Canada',
-		    'greetings' => 'FoodImporter ready...'
-		]);
+		$this->emit('FoodImporter starting...');
 	}
 
-	function emit($dataArrayMsg) {
-		$result = $this->httpPost($this->SOCKET_API, $dataArrayMsg, true, false);
-		if(!$result['error'])
-		{
-		    var_dump($result['message']);
-		}
-		return $result['error'];
+	function emit($msg) {
+		$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
 	}
 
 	function importHtmlPublicPage($chainName, $sectionName) {
-		echo "importHtmlPublicPage: $chainName / $sectionName \r\n";
+		$this->emit("importHtmlPublicPage: $chainName / $sectionName ");
 
 		// Use basename() function to return the base name of file
 		$fileName = $this->DIR_DOWNLOAD . $chainName .".html";
@@ -122,21 +113,21 @@ class FoodImporter
 		// from url and use file_put_contents() function to
 		// save the file by using base name
 		if(file_put_contents( $fileName,file_get_contents($url))) {
-		    echo "File downloaded successfully: $fileName\r\n";
+		    $this->emit("File downloaded successfully: $fileName");
 		}
 		else {
-		    echo "File downloading failed: $fileName.\r\n";
+		    $this->emit("File downloading failed: $fileName.");
 		}
 		return $fileName;
 	}
 
 	function downloadCerberusFiles($chainName) {
-		echo "downloadCerberusFiles: $chainName \r\n";
+		$this->emit("downloadCerberusFiles: $chainName");
 
 		// Mise en place d'une connexion basique
 		$conn_id = ftp_ssl_connect($this->URLS[$chainName]['ftp_host']);
 
-		echo "Ftp connected. \r\n";
+		$this->emit("downloadCerberusFiles: Ftp connected.");
 
 		// Identification avec un nom d'utilisateur et un mot de passe
 		$ftp_username = $this->URLS[$chainName]['username'];
@@ -145,12 +136,12 @@ class FoodImporter
 		$login_result = ftp_login($conn_id, $ftp_username, $ftp_password);
 		ftp_pasv($conn_id, TRUE);
 
-		echo "Ftp Login successful. \r\n";
+		$this->emit("downloadCerberusFiles: Ftp Login successful.");
 
 		// Récupération du contenu d'un dossier
 		$contents = ftp_nlist($conn_id, ".");
 
-	    echo count($contents)." files should be downloaded \r\n";
+	    $this->emit(count($contents)." files should be downloaded ");
 
 		foreach ($contents as $fileName) {
 			// Should not download useless files
@@ -166,9 +157,9 @@ class FoodImporter
 
 			// try to download a file from server
 			if(ftp_get($conn_id, $localFilePath, $remoteFilePath, FTP_BINARY)){
-			    echo "Downloaded - $localFilePath \r\n";
+			    $this->emit("Downloaded - $localFilePath ");
 			}else{
-			    echo "Error - $localFilePath \r\n";
+			    $this->emit("Error - $localFilePath ");
 			}
 		}
 
@@ -192,7 +183,7 @@ class FoodImporter
 	}
 
 	function downloadFilesFromURLSArray($arr) {
-	    echo "download ".count($arr)." Files (From URLS Array)\r\n";
+	    $this->emit("download ".count($arr)." Files (From URLS Array)");
 		$downloadedFiles = array();
 
 		foreach ($arr as $url) {
@@ -200,18 +191,18 @@ class FoodImporter
 			$fileName = $this->formatFileName($url);
 
 			if(file_put_contents($fileName, file_get_contents($url))) {
-			    echo "Downloaded: $fileName\r\n";
+			    $this->emit("Downloaded: $fileName");
 			    $downloadedFiles[] = $fileName;
 			}
 			else {
-			    echo "Failed downloading: $fileName\r\n";
+			    $this->emit("Failed downloading: $fileName");
 			}
 		}
 		return $downloadedFiles;
 	}
 
 	function pendingFiles($sectionName) {
-		echo "Searching pending files of $sectionName \r\n";
+		$this->emit("Searching pending files of $sectionName ");
 
 		$files = scandir($this->DIR_DOWNLOAD);
 		$pendingFiles = array();
@@ -220,13 +211,13 @@ class FoodImporter
 				$pendingFiles[] = $this->DIR_DOWNLOAD . $fileName;
 		}
 
-		echo "Found ".count($pendingFiles)." files \r\n";
+		$this->emit("Found ".count($pendingFiles)." files ");
 		return $pendingFiles;
 	}
 
 
 	function cleanXmlFile($fileName) {
-		echo "cleanXmlFile $fileName \r\n";
+		$this->emit("cleanXmlFile $fileName ");
 
 		$xml = file_get_contents($fileName);
 		$realStart = strpos($xml, '<root>');
@@ -245,7 +236,7 @@ class FoodImporter
 	}
 
 	function getFilesUrls($url){
-		echo "getFilesUrls: $url \r\n";
+		$this->emit("getFilesUrls: $url ");
 
 		$response = file_get_contents($url);
 		$hrefIndex = strpos($response, 'href="');
@@ -267,7 +258,7 @@ class FoodImporter
 
 
 	function runGzExtractionOnFilesArray($arr) {
-		echo "runGzExtractionOnFilesArray...\r\n";
+		$this->emit("runGzExtractionOnFilesArray...");
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
@@ -286,12 +277,12 @@ class FoodImporter
 			}
 		}
 
-		echo count($extractedFileNames)." files extracted \r\n";
+		$this->emit(count($extractedFileNames)." files extracted ");
 		return $extractedFileNames;
 	}
 
 	private function extractGZFile($fileName) {
-		echo "extractGZFile: $fileName \r\n";
+		$this->emit("extractGZFile: $fileName ");
 
 		// Raising this value may increase performance
 		$buffer_size = 16384; // read 4kb at a time
@@ -327,9 +318,9 @@ class FoodImporter
 	function xmlStringToArray($myXMLData) {
 		$xml = simplexml_load_string($myXMLData);
 		if ($xml === false) {
-		    echo "Failed loading XML: \r\n";
+		    $this->emit("Failed loading XML: ");
 		    foreach(libxml_get_errors() as $error) {
-		        echo "\r\n". $error->message;
+		        $this->emit($error->message);
 		    }
 		} else {
 		    return $xml;
@@ -360,9 +351,9 @@ class FoodImporter
 
 	function saveStrAsFile($str, $fileName) {
 		if(file_put_contents($fileName, $str))
-			echo "$fileName saved \r\n";
+			$this->emit("$fileName saved ");
 		else
-			echo "Cannot save $fileName \r\n";
+			$this->emit("Cannot save $fileName ");
 		return $fileName;
 	}
 
@@ -372,7 +363,7 @@ class FoodImporter
 
 	function XmlBeautify($fileName){
 
-		echo "XmlBeautify($fileName) \r\n";
+		$this->emit("XmlBeautify($fileName) ");
 
 		$xml = file_get_contents($fileName);
 
@@ -416,7 +407,7 @@ class FoodImporter
 	}
 
 	function removeDuplicatesOlderFiles() {
-		echo "removeDuplicatesOlderFiles... \r\n";
+		$this->emit("removeDuplicatesOlderFiles... ");
 
 		$files = scandir($this->DIR_DOWNLOAD);
 		$uniqueFiles = array();
@@ -428,36 +419,36 @@ class FoodImporter
 
 			// index the fileKey
 			if(!isset($uniqueFiles[$fileKey])) {
-				echo "indexing $fileKey \r\n";
+				$this->emit("indexing $fileKey ");
 				$uniqueFiles[$fileKey] = $fileDate;
 			}
 			// compare
 			else if($uniqueFiles[$fileKey] < $fileDate) {
 				// previous file saved is older, delete it
 				$previousFileName = $this->DIR_DOWNLOAD.$fileKey.'-'.$uniqueFiles[$fileKey].$fileExt;
-				echo "delete $previousFileName\r\n";
+				$this->emit("delete $previousFileName");
 				unlink($previousFileName);
 				$uniqueFiles[$fileKey] = $fileDate;
-				echo "keep ".$uniqueFiles[$fileKey]."\r\n";
+				$this->emit("keep ".$uniqueFiles[$fileKey]."");
 			}
 			else if($uniqueFiles[$fileKey] > $fileDate) {
 				// the current fileName is older, delete it
-				echo "delete ".$this->DIR_DOWNLOAD.$fileName."\r\n";
+				$this->emit("delete ".$this->DIR_DOWNLOAD.$fileName."");
 				unlink($this->DIR_DOWNLOAD.$fileName);
-				echo "keep ".$uniqueFiles[$fileKey]."\r\n";
+				$this->emit("keep ".$uniqueFiles[$fileKey]."");
 			}
 		}
 	}
 
 	// Loads the stores file list, identify the ChainCode, and runs on the stores list to save each store with its name and the ChainID
 	function parseXMLStores($storeXmlFileName) {
-		echo "parseXMLStores $storeXmlFileName \r\n";
+		$this->emit("parseXMLStores $storeXmlFileName ");
 
 		$XMLfileContent = file_get_contents($storeXmlFileName);
 		$xml = $this->xmlStringToArray($XMLfileContent);
 
 	    $ChainID = $xml->CHAINID;
-	    echo "ChainID found: $ChainID \r\n";
+	    $this->emit("ChainID found: $ChainID ");
 
 	    $Stores = $xml->STORES;
 	    $newStores = array();
@@ -474,7 +465,7 @@ class FoodImporter
 			);
 	    }
 
-	    echo "Should insert ".count($newStores)." stores \r\n";
+	    $this->emit("Should insert ".count($newStores)." stores ");
 
 	   	for ($i=0; $i < ceil(count($newStores)/50)*50; $i+=50) {
 
@@ -487,10 +478,10 @@ class FoodImporter
 
 		    if($insertStore['error']){
 		    	$shouldKeepFile = true;
-		    	echo $insertStore['message']."\r\n";
+		    	$this->emit($insertStore['message']."");
 		    }
 		    else {
-		    	echo "Updated ".count($payload['stores'])." stores of ChainID $ChainID\r\n";
+		    	$this->emit("Updated ".count($payload['stores'])." stores of ChainID $ChainID");
 		    }
 	   	}
 
@@ -504,7 +495,7 @@ class FoodImporter
 
 	function parseXMLPriceFull($priceFullXmlFileName) {
 
-		echo "parseXMLPriceFull $priceFullXmlFileName \r\n";
+		$this->emit("parseXMLPriceFull $priceFullXmlFileName ");
 
 		$XMLfileContent = file_get_contents($priceFullXmlFileName);
 		$xml = $this->xmlStringToArray($XMLfileContent);
@@ -515,7 +506,7 @@ class FoodImporter
 		$SubChainId = 	$xml->SubChainId;
 		$StoreId 	= 	$xml->StoreId;
 
-	    echo "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId\r\n";
+	    $this->emit("ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
 
 		// Preparing data for Items
 		$newItems = array();
@@ -538,7 +529,7 @@ class FoodImporter
 			);
 		}
 
-		echo "Should insert ".count($newItems)." items \r\n";
+		$this->emit("Should insert ".count($newItems)." items ");
 
 	   	for ($i=0; $i < ceil(count($newItems)/50)*50; $i+=50) {
 
@@ -556,10 +547,10 @@ class FoodImporter
 
 		    if($insertItems['error']) {
 		    	$shouldKeepFile = true;
-		    	echo $insertItems['message']."\r\n";
+		    	$this->emit($insertItems['message']."");
 		    }
 		    else {
-		    	echo "Updated ".count($payload['items'])." items of ChainID $ChainID\r\n";
+		    	$this->emit("Updated ".count($payload['items'])." items of ChainID $ChainID");
 		    }
 	   	}
 
