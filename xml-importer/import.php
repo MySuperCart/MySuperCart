@@ -31,7 +31,7 @@ $fi = new FoodImporter();
 // 	$fi->parseXMLPriceFull($storeXmlFile);
 // }
 
-// TEST download public page of yohananof
+// TEST download all files of yohananof
 // $fi->downloadCerberusFiles('yohananof');
 // $gzipXmlFiles = $fi->pendingFiles('.gz');
 // $fi->runGzExtractionOnFilesArray($gzipXmlFiles);
@@ -41,11 +41,22 @@ $fi = new FoodImporter();
 // $fi->removeDuplicatesOlderFiles();
 
 if (isset($argc)) {
-	for ($i = 0; $i < $argc; $i++) {
-		echo "Argument #" . $i . " - " . $argv[$i] . "\n";
+	switch ($argv[1]) {
+		case 'download':
+			$chainName = $argv[2];
+			$fileType = $argv[3];
+			$fi->download($chainName, $fileType);
+			break;
+
+		case 'parse':
+			$fileType = $argv[2];
+			$fi->parseXML($fileType);
+			break;
+
+		default:
+			# code...
+			break;
 	}
-}
-else {
-	echo "argc and argv disabled\n";
+
 }
 ?>

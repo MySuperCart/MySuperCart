@@ -14,7 +14,10 @@ class FoodImporter
 			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx"
 		),
 		'maayan2000' => array(
-			'page' => "http://maayan2000.binaprojects.com/Main.aspx"
+			'json' => true,
+			'page' => "http://maayan2000.binaprojects.com/Main.aspx",
+			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'download' => "http://maayan2000.binaprojects.com/Download/"
 		),
 		'victory_mahsane_hashuk' => array(
 			'page' => "http://matrixcatalog.co.il/NBCompetitionRegulations.aspx"
@@ -41,6 +44,7 @@ class FoodImporter
 			'page' => "http://shefabirkathashem.binaprojects.com/Main.aspx"
 		),
 		'shufersal' => array(
+			'html' => true,
 			'Stores' => 'http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=5&storeId=0',
 			'PriceFull' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=2&storeId=0&asort=Time&sortdir=DESC&sort=Time"
 		),
@@ -68,11 +72,11 @@ class FoodImporter
 			'ftp_host' => 'url.retail.publishedprices.co.il',
 			'username' => 'osherad'
 		),
-		'retalix' => array(
-			'ftp_host' => 'url.retail.publishedprices.co.il',
-			'username' => 'Retalix',
-			'password' => '12345'
-		),
+		// 'retalix' => array(
+		// 	'ftp_host' => 'url.retail.publishedprices.co.il',
+		// 	'username' => 'Retalix',
+		// 	'password' => '12345'
+		// ),
 		'superdosh' => array(
 			'ftp_host' => 'url.retail.publishedprices.co.il',
 			'username' => 'SuperDosh'
@@ -102,12 +106,12 @@ class FoodImporter
 		$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
 	}
 
-	function importHtmlPublicPage($chainName, $sectionName) {
-		$this->emit("importHtmlPublicPage: $chainName / $sectionName ");
+	private function importHtmlPublicPage($chainName, $fileType) {
+		$this->emit("importHtmlPublicPage: $chainName / $fileType ");
 
 		// Use basename() function to return the base name of file
 		$fileName = $this->DIR_DOWNLOAD . $chainName .".html";
-		$url = $this->URLS[$chainName][$sectionName];
+		$url = $this->URLS[$chainName][$fileType];
 
 		// Use file_get_contents() function to get the file
 		// from url and use file_put_contents() function to
@@ -121,8 +125,8 @@ class FoodImporter
 		return $fileName;
 	}
 
-	function downloadCerberusFiles($chainName) {
-		$this->emit("downloadCerberusFiles: $chainName");
+	private function downloadCerberusFiles($chainName, $fileType) {
+		$this->emit("downloadCerberusFiles: $chainName / $fileType");
 
 		// Mise en place d'une connexion basique
 		$conn_id = ftp_ssl_connect($this->URLS[$chainName]['ftp_host']);
@@ -139,17 +143,13 @@ class FoodImporter
 		$this->emit("downloadCerberusFiles: Ftp Login successful.");
 
 		// Récupération du contenu d'un dossier
-		$contents = ftp_nlist($conn_id, ".");
+		$contents = ftp_nlist($conn_id, "./".$fileType."*");
 
 	    $this->emit(count($contents)." files should be downloaded ");
 
 		foreach ($contents as $fileName) {
-			// Should not download useless files
-			if(
-				strpos($fileName, "PriceFull") !== 0 &&
-				strpos($fileName, "Stores") !== 0 &&
-				strpos($fileName, "Promo") !== 0
-			) continue;
+			// Confirm we are not download useless files
+			if(strpos($fileName, $fileType) !== 0) continue;
 
 			// local & server file path
 			$localFilePath  = $this->DIR_DOWNLOAD . $fileName;
@@ -166,7 +166,6 @@ class FoodImporter
 		// // close the connection
 		ftp_close($conn_id);
 	}
-
 	function strLenOrPos($str, $needle) {
 		$pos = strpos($str, $needle);
 		if(strpos($str, $needle) !== FALSE)
@@ -219,7 +218,16 @@ class FoodImporter
 	function cleanXmlFile($fileName) {
 		$this->emit("cleanXmlFile $fileName ");
 
-		$xml = file_get_contents($fileName);
+		$xml = $this->file_get_contents_utf8($fileName);
+		$realStart = strpos($xml, '<Root>');
+
+		// maayan2000 stores files are with Root instead of root
+		if($realStart !== FALSE) {
+			  $xml = preg_replace('/<Root>/', '<root>', $xml);
+			  $xml = preg_replace('/<\/Root>/', '</root>', $xml);
+		}
+
+		// shufersal files have asx tags...
 		$realStart = strpos($xml, '<root>');
 		if($realStart === FALSE) {
 			$realStart = strpos($xml,'<asx:values>');
@@ -235,13 +243,12 @@ class FoodImporter
 		return $fileName;
 	}
 
-	function getFilesUrls($url){
+	private function getFilesUrls($url){
 		$this->emit("getFilesUrls: $url ");
 
 		$response = file_get_contents($url);
 		$hrefIndex = strpos($response, 'href="');
 		$urls = array();
-		$url;
 		while($hrefIndex !== FALSE) {
 			$hrefIndex = $hrefIndex + 6;
 			$response = substr($response, $hrefIndex, strlen($response) - $hrefIndex);
@@ -256,6 +263,17 @@ class FoodImporter
 		return $urls;
 	}
 
+	private function getJsonFilesUrls($url, $chainName) {
+		$this->emit("getJsonFilesUrls: $url ");
+
+		$response = file_get_contents($url);
+		$jsonArray = json_decode($response, true);
+		$urls = array();
+		for ($i=0; $i < count($jsonArray); $i++) {
+			$urls[] = $this->URLS[$chainName]['download'].$jsonArray[$i]['FileNm'];
+		}
+		return $urls;
+	}
 
 	function runGzExtractionOnFilesArray($arr) {
 		$this->emit("runGzExtractionOnFilesArray...");
@@ -268,12 +286,12 @@ class FoodImporter
 
 				// Beautify the final XML file
 				// Warning: this can cause a heavier load of file_get_contents
-				// $this->XmlBeautify($xmlFileName);
 				$this->cleanXmlFile($xmlFileName);
+				$this->XmlBeautify($xmlFileName);
 
 			} else {
-				// $this->XmlBeautify($fileName);
 				$this->cleanXmlFile($fileName);
+				$this->XmlBeautify($fileName);
 			}
 		}
 
@@ -367,6 +385,10 @@ class FoodImporter
 
 		$xml = file_get_contents($fileName);
 
+		$xml = preg_replace_callback("/(<\/?\w+)(.*?>)/", function ($m) {
+  			return strtoupper($m[1]) . $m[2];
+  		}, $xml);
+
 		// add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
 		$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml);
 
@@ -440,6 +462,57 @@ class FoodImporter
 		}
 	}
 
+	private function detect_utf_encoding($filename) {
+		// Unicode BOM is U+FEFF, but after encoded, it will look like this.
+		$UTF32_BIG_ENDIAN_BOM = chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF);
+		$UTF32_LITTLE_ENDIAN_BOM = chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00);
+		$UTF16_BIG_ENDIAN_BOM = chr(0xFE) . chr(0xFF);
+		$UTF16_LITTLE_ENDIAN_BOM = chr(0xFF) . chr(0xFE);
+		$UTF8_BOM = chr(0xEF) . chr(0xBB) . chr(0xBF);
+
+	    $text = file_get_contents($filename);
+	    $first2 = substr($text, 0, 2);
+	    $first3 = substr($text, 0, 3);
+	    $first4 = substr($text, 0, 3);
+	    if ($first3 == $UTF8_BOM) return 'UTF-8';
+	    elseif ($first4 == $UTF32_BIG_ENDIAN_BOM) return 'UTF-32BE';
+	    elseif ($first4 == $UTF32_LITTLE_ENDIAN_BOM) return 'UTF-32LE';
+	    elseif ($first2 == $UTF16_BIG_ENDIAN_BOM) return 'UTF-16BE';
+	    elseif ($first2 == $UTF16_LITTLE_ENDIAN_BOM) return 'UTF-16LE';
+	}
+
+	function file_get_contents_utf8($fn) {
+		$content = file_get_contents($fn);
+		$encoding = $this->detect_utf_encoding($fn);
+
+		$this->emit("file_get_contents_utf8: detected encoding ".$encoding);
+
+		switch ($encoding) {
+			case 'UTF-8':
+				return $content;
+				break;
+
+			case 'UTF-16LE':
+				return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
+				break;
+
+			// case 'UTF-16BE':
+			// 	return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
+			// 	break;
+
+
+			// TODO: check the EFBBBF
+			// case 'UTF-32BE':
+			// case 'UTF-32LE':
+			// 	return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-32', 'UTF-8', $content));
+			// 	break;
+
+			default:
+				return $content;
+				break;
+		}
+	}
+
 	// Loads the stores file list, identify the ChainCode, and runs on the stores list to save each store with its name and the ChainID
 	function parseXMLStores($storeXmlFileName) {
 		$this->emit("parseXMLStores $storeXmlFileName ");
@@ -450,7 +523,8 @@ class FoodImporter
 	    $ChainID = $xml->CHAINID;
 	    $this->emit("ChainID found: $ChainID ");
 
-	    $Stores = $xml->STORES;
+	    $Stores = $xml->xpath('//STORES')[0];
+
 	    $newStores = array();
 
 		foreach($Stores->children() as $Store) {
@@ -486,7 +560,7 @@ class FoodImporter
 	   	}
 
 	    if(!isset($shouldKeepFile)) {
-	    	unlink($priceFullXmlFileName);
+	    	unlink($storeXmlFileName);
 	    }
 
 	    return;
@@ -560,5 +634,40 @@ class FoodImporter
 
 	    return;
 	}
+	function download($chainName, $fileType) {
+		if(isset($this->URLS[$chainName]['ftp_host'])){
+			$this->downloadCerberusFiles($chainName, $fileType);
+			$gzipXmlFiles = $this->pendingFiles($fileType);
+			$this->runGzExtractionOnFilesArray($gzipXmlFiles);
+		}
+		else if(isset($this->URLS[$chainName]['html'])) {
+			$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
+			$urls = $this->getFilesUrls($storePublicPage);
+			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
+			$this->runGzExtractionOnFilesArray($downloadedFiles);
+		}
+		else if(isset($this->URLS[$chainName]['json'])) {
+			$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
+			$urls = $this->getJsonFilesUrls($this->URLS[$chainName][$fileType]."&WDate=".date("d/m/Y"), $chainName);
+			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
+			$this->runGzExtractionOnFilesArray($downloadedFiles);
+		}
+		else {
+			$this->emit("Could not download $fileType files of $chainName. Some configuration are missing.");
+		}
+	}
+	function parseXML($fileType) {
+		$xmlFiles = $this->pendingFiles($fileType);
 
+		if($fileType == 'Stores') {
+			foreach ($xmlFiles as $xmlFile) {
+				$this->parseXMLStores($xmlFile);
+			}
+		}
+		else if($fileType == 'PriceFull') {
+			foreach ($xmlFiles as $xmlFile) {
+				$this->parseXMLPriceFull($xmlFile);
+			}
+		}
+	}
 }
