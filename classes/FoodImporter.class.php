@@ -11,7 +11,10 @@ class FoodImporter
 	// Initialize a file URL to the variable
 	private $URLS = array(
 		'kingstore' => array(
-			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx"
+			'json' => true,
+			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx",
+			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'download' => "https://www.kingstore.co.il/Food_Law/Download/"
 		),
 		'maayan2000' => array(
 			'json' => true,
@@ -20,13 +23,21 @@ class FoodImporter
 			'download' => "http://maayan2000.binaprojects.com/Download/"
 		),
 		'victory_mahsane_hashuk' => array(
-			'page' => "http://matrixcatalog.co.il/NBCompetitionRegulations.aspx"
+			'html' => true,
+			'page' => "http://matrixcatalog.co.il/NBCompetitionRegulations.aspx",
+			'shouldFiltersLinks' => true
 		),
 		'zolvebegadol' => array(
-			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx"
+			'json' => true,
+			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx",
+			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'download' => "http://zolvebegadol.binaprojects.com/Download/"
 		),
 		'ybitan' => array(
-			'page' => "http://publishprice.ybitan.co.il/"
+			'html' => true,
+			'page' => "http://publishprice.ybitan.co.il/",
+			'shouldFiltersLinks' => true,
+			//////// TODO
 		),
 		'mega' => array(
 			'page' => "http://publishprice.mega.co.il/"
@@ -243,7 +254,7 @@ class FoodImporter
 		return $fileName;
 	}
 
-	private function getFilesUrls($url){
+	private function getFilesUrls($url, $fileType = null){
 		$this->emit("getFilesUrls: $url ");
 
 		$response = file_get_contents($url);
@@ -256,7 +267,8 @@ class FoodImporter
 			$url = preg_replace('/&amp;/', '&', $url);
 			if(strpos($url, "http") !== FALSE)
 			{
-				$urls[] = trim($url);
+				if(!$fileType || ($fileType && strpos($url, $fileType) !== FALSE))
+					$urls[] = trim($url);
 			}
 			$hrefIndex = strpos($response, 'href="');
 		}
@@ -280,23 +292,32 @@ class FoodImporter
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
-			if($this->isGzFile($fileName)) {
-				$xmlFileName = $this->extractGZFile($fileName);
-				$extractedFileNames[] = $xmlFileName;
+			$xmlFileName = $this->uncompressIfNeeded($fileName);
+			$extractedFileNames[] = $xmlFileName;
 
-				// Beautify the final XML file
-				// Warning: this can cause a heavier load of file_get_contents
-				// $this->cleanXmlFile($xmlFileName);
-				// $this->XmlBeautify($xmlFileName);
-
-			} else {
-				// $this->cleanXmlFile($fileName);
-				// $this->XmlBeautify($fileName);
-			}
+			// Beautify the final XML file
+			// Warning: this can cause a heavier load of file_get_contents
+			$this->cleanXmlFile($xmlFileName);
+			$this->XmlBeautify($xmlFileName);
 		}
 
 		$this->emit(count($extractedFileNames)." files extracted ");
 		return $extractedFileNames;
+	}
+
+	private function uncompressIfNeeded($fileName) {
+		$this->emit("uncompressIfNeeded: $fileName");
+		if($this->isGzFile($fileName)) {
+			return $this->extractGZFile($fileName);
+		} else if($this->isZipFile($fileName)) {
+			return $this->extractZipFile($fileName);
+		} else if($this->isRarFile($fileName)) {
+			$this->emit("uncompressIfNeeded: $fileName - extractRarFile function is not implemented yet...");
+		} else {
+			$this->emit("uncompressIfNeeded: $fileName - No need...");
+			return $fileName;
+		}
+		return;
 	}
 
 	private function isGzFile($fileName) {
@@ -309,14 +330,54 @@ class FoodImporter
 			fclose($zp);
 		}
 
-		$this->emit("isGzFile: $fileName - ".($isGzipped ? 'YES' : 'NO'));
+		if($isGzipped)
+			$this->emit("isGzFile: $fileName - GZ");
 
 		return $isGzipped;
 	}
 
+	private function isZipFile($fileName) {
+
+		$fh = @fopen($fileName, "r");
+
+		if (!$fh) {
+		  $this->emit("ERROR: couldn't open $fileName.");
+		  return false;
+		}
+
+		$blob = fgets($fh, 5);
+
+		fclose($fh);
+
+		if (strpos($blob, 'PK') !== false) {
+			$this->emit("isZipFile: $fileName - Zip");
+			return true;
+		}
+		return;
+	}
+
+	private function isRarFile($fileName) {
+
+		$fh = @fopen($fileName, "r");
+
+		if (!$fh) {
+		  $this->emit("ERROR: couldn't open $fileName.");
+		  return false;
+		}
+
+		$blob = fgets($fh, 5);
+
+		fclose($fh);
+
+		if (strpos($blob, 'Rar') !== false) {
+			$this->emit("isZipFile: $fileName - Rar");
+			return true;
+		}
+		return;
+	}
 
 	private function extractGZFile($fileName) {
-		$this->emit("extractGZFile: $fileName ");
+		$this->emit("extractGZFile: $fileName");
 
 		// Raising this value may increase performance
 		$buffer_size = 4096; // read 4kb at a time
@@ -339,6 +400,20 @@ class FoodImporter
 		unlink($fileName);
 
 		return $out_fileName;
+	}
+
+	private function extractZipFile($fileName) {
+		$this->emit("extractZipFile: $fileName");
+
+		$zip = new ZipArchive;
+		$res = $zip->open($fileName);
+		if ($res === TRUE) {
+			$out_fileName = $zip->getNameIndex(0);
+			$zip->extractTo($this->DIR_DOWNLOAD);
+			$zip->close();
+			unlink($fileName);
+			return $this->DIR_DOWNLOAD . $out_fileName;
+		}
 	}
 
 	function insertChain($ChainID) {
@@ -651,19 +726,28 @@ class FoodImporter
 	    return;
 	}
 	function download($chainName, $fileType) {
+		// Download from Cerberus FTP of the Chain
 		if(isset($this->URLS[$chainName]['ftp_host'])){
 			$this->downloadCerberusFiles($chainName, $fileType);
 			$gzipXmlFiles = $this->pendingFiles($fileType);
 			$this->runGzExtractionOnFilesArray($gzipXmlFiles);
 		}
-		else if(isset($this->URLS[$chainName]['html'])) {
+		// Download from a public HTML file depending on the filetype
+		else if(isset($this->URLS[$chainName]['html']) && !isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
 			$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
 			$urls = $this->getFilesUrls($storePublicPage);
 			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
 			$this->runGzExtractionOnFilesArray($downloadedFiles);
 		}
+		// Download from a public HTML file containing a whole list
+		else if(isset($this->URLS[$chainName]['html']) && isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
+			$storePublicPage = $this->importHtmlPublicPage($chainName, 'page');
+			$urls = $this->getFilesUrls($storePublicPage, $fileType);
+			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
+			$this->runGzExtractionOnFilesArray($downloadedFiles);
+		}
+		// Download from a public JSON API depending on the filetype
 		else if(isset($this->URLS[$chainName]['json'])) {
-			$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
 			$urls = $this->getJsonFilesUrls($this->URLS[$chainName][$fileType]."&WDate=".date("d/m/Y"), $chainName);
 			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
 			$this->runGzExtractionOnFilesArray($downloadedFiles);
