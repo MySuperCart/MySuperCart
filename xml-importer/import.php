@@ -53,6 +53,9 @@ if (isset($argc)) {
 			$fi->parseXML($fileType);
 			break;
 
+		case 'extract':
+			$fi->runGzExtractionOnFilesArray(array($argv[2]));
+
 		default:
 			# code...
 			break;

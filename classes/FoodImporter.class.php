@@ -280,18 +280,18 @@ class FoodImporter
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
-			if(strpos($fileName, 'gz') !== FALSE) {
+			if($this->isGzFile($fileName)) {
 				$xmlFileName = $this->extractGZFile($fileName);
 				$extractedFileNames[] = $xmlFileName;
 
 				// Beautify the final XML file
 				// Warning: this can cause a heavier load of file_get_contents
-				$this->cleanXmlFile($xmlFileName);
-				$this->XmlBeautify($xmlFileName);
+				// $this->cleanXmlFile($xmlFileName);
+				// $this->XmlBeautify($xmlFileName);
 
 			} else {
-				$this->cleanXmlFile($fileName);
-				$this->XmlBeautify($fileName);
+				// $this->cleanXmlFile($fileName);
+				// $this->XmlBeautify($fileName);
 			}
 		}
 
@@ -299,12 +299,28 @@ class FoodImporter
 		return $extractedFileNames;
 	}
 
+	private function isGzFile($fileName) {
+		$isGzipped = FALSE;
+		if(($zp = fopen($fileName, 'r'))!==FALSE) {
+			$start = fread($zp, 3);
+			if(0 === mb_strpos($start , "\x1f" . "\x8b" . "\x08")) { // this is a gzip'd file
+				$isGzipped = TRUE;
+			}
+			fclose($zp);
+		}
+
+		$this->emit("isGzFile: $fileName - ".($isGzipped ? 'YES' : 'NO'));
+
+		return $isGzipped;
+	}
+
+
 	private function extractGZFile($fileName) {
 		$this->emit("extractGZFile: $fileName ");
 
 		// Raising this value may increase performance
-		$buffer_size = 16384; // read 4kb at a time
-		$out_fileName = str_replace('.gz', '.xml', $fileName);
+		$buffer_size = 4096; // read 4kb at a time
+		$out_fileName = $fileName . ".xml";
 
 		// Open our files (in binary mode)
 		$file = gzopen($fileName, 'rb');
