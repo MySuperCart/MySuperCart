@@ -15,12 +15,14 @@ class FoodImporter
 			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx",
 			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'download' => "https://www.kingstore.co.il/Food_Law/Download/"
+			'shouldAppendDateFormat' => "d/m/Y"
 		),
 		'maayan2000' => array(
 			'json' => true,
 			'page' => "http://maayan2000.binaprojects.com/Main.aspx",
 			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'download' => "http://maayan2000.binaprojects.com/Download/"
+			'shouldAppendDateFormat' => "d/m/Y"
 		),
 		'victory_mahsane_hashuk' => array(
 			'html' => true,
@@ -32,11 +34,14 @@ class FoodImporter
 			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx",
 			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'download' => "http://zolvebegadol.binaprojects.com/Download/"
+			'shouldAppendDateFormat' => "d/m/Y"
 		),
 		'ybitan' => array(
 			'html' => true,
 			'page' => "http://publishprice.ybitan.co.il/",
 			'shouldFiltersLinks' => true,
+			'shouldAppendDateFormat' => "Ymd"
+
 			//////// TODO
 		),
 		'mega' => array(
