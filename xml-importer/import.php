@@ -64,7 +64,7 @@ if (isset($argc)) {
 			$fi->syncAllStores();
 
 		case 'pricefull':
-			$fi->LOG_LEVEL = 2;
+			$fi->LOG_LEVEL = 1;
 			$fi->syncAllPriceFull();
 
 		case 'insertChain':
