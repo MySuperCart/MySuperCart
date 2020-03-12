@@ -492,10 +492,10 @@ class FoodImporter
 		}
 	}
 
-	function insertChain($ChainID) {
+	function insertChain($ChainID, $ChainName) {
 	  $Chain = $this->httpPost(
-	  	"/RefChain/insertRefChain.php", 
-	  	array("ChainID" => $ChainID)
+	  	"/RefChain/insertRefChain.php",
+	  	array("ChainID" => $ChainID, "ChainName" => $ChainName)
 	  );
 	  return $Chain['ChainID'];
 	}
@@ -772,8 +772,9 @@ class FoodImporter
 
 	    $ChainID = $xml->xpath('//CHAINID')[0];
 	    $this->emit(1, "ChainID found: $ChainID ");
-
-	    $this->insertChain($ChainID);
+	    $ChainName = $xml->xpath('//CHAINNAME');
+	    $ChainName = count($ChainName) ? $ChainName[0] : '';
+	    $this->insertChain($ChainID, $ChainName);
 
 	    $Stores = $xml->xpath('//STOREID')[0];
 	    $Stores = $Stores->xpath("..")[0]->xpath("..")[0];
