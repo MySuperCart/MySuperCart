@@ -14,50 +14,67 @@ class FoodImporter
 			'json' => true,
 			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx",
 			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
-			'download' => "https://www.kingstore.co.il/Food_Law/Download/"
-			'shouldAppendDateFormat' => "d/m/Y"
+			'download' => "https://www.kingstore.co.il/Food_Law/Download/",
+			'shouldAppendDateFormatToPage' => "m/d/Y"
 		),
 		'maayan2000' => array(
 			'json' => true,
 			'page' => "http://maayan2000.binaprojects.com/Main.aspx",
 			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
-			'download' => "http://maayan2000.binaprojects.com/Download/"
-			'shouldAppendDateFormat' => "d/m/Y"
+			'download' => "http://maayan2000.binaprojects.com/Download/",
+			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
 		'victory_mahsane_hashuk' => array(
 			'html' => true,
 			'page' => "http://matrixcatalog.co.il/NBCompetitionRegulations.aspx",
-			'shouldFiltersLinks' => true
+			'shouldFiltersLinks' => true,
+			'shouldPrependDownloadFieldForDownload' => true,
+			'download' => "http://matrixcatalog.co.il/",
 		),
 		'zolvebegadol' => array(
 			'json' => true,
 			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx",
 			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
-			'download' => "http://zolvebegadol.binaprojects.com/Download/"
-			'shouldAppendDateFormat' => "d/m/Y"
+			'download' => "http://zolvebegadol.binaprojects.com/Download/",
+			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
 		'ybitan' => array(
 			'html' => true,
 			'page' => "http://publishprice.ybitan.co.il/",
 			'shouldFiltersLinks' => true,
-			'shouldAppendDateFormat' => "Ymd"
-
-			//////// TODO
+			'shouldAppendDateFormatToPage' => "Ymd",
+			'shouldPrependPageFieldForDownload' => true
 		),
 		'mega' => array(
-			'page' => "http://publishprice.mega.co.il/"
+			'html' => true,
+			'page' => "http://publishprice.mega.co.il/",
+			'shouldFiltersLinks' => true,
+			'shouldAppendDateFormatToPage' => "Ymd",
+			'shouldPrependPageFieldForDownload' => true
 		),
 		'superpharm' => array(
-			'page' => "http://prices.super-pharm.co.il/"
+			'html' => true,
+			'page' => "http://prices.super-pharm.co.il/",
+			'Stores' => "http://prices.super-pharm.co.il/?type=StoresFull&store=&date=",
+			'shouldAppendDateFormatToCustom' => "Y-m-d",
+			'shouldPrependPageFieldForDownload' => true
 		),
-		'superbareket' => array(
-			'page' => "http://prices.super-bareket.co.il/"
-		),
+		// 'superbareket' => array(
+		// 	'page' => "http://prices.super-bareket.co.il/"
+		// ),
 		'shukhayir' => array(
-			'page' => "http://shuk-hayir.binaprojects.com/Main.aspx"
+			'json' => true,
+			'page' => "http://shuk-hayir.binaprojects.com/Main.aspx",
+			'Stores' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'download' => "http://shuk-hayir.binaprojects.com/Download/",
+			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
 		'shefabirkathashem' => array(
-			'page' => "http://shefabirkathashem.binaprojects.com/Main.aspx"
+			'json' => true,
+			'page' => "http://shefabirkathashem.binaprojects.com/Main.aspx",
+			'Stores' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'download' => "http://shefabirkathashem.binaprojects.com/Download/",
+			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
 		'shufersal' => array(
 			'html' => true,
@@ -112,42 +129,50 @@ class FoodImporter
 	);
 
 	private $DIR_DOWNLOAD = "./temp_downloads/";
+	private $COOKIES;
+	public $LOG_LEVEL;
 
-	function __construct()
-	{
-		$this->emit('FoodImporter starting...');
-	}
+	function __construct() {}
 
-	function emit($msg) {
-		$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
+	function emit($importance, $msg) {
+		if($this->LOG_LEVEL <= $importance)
+			$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
 	}
 
 	private function importHtmlPublicPage($chainName, $fileType) {
-		$this->emit("importHtmlPublicPage: $chainName / $fileType ");
+		$this->emit(0, "importHtmlPublicPage: $chainName / $fileType ");
 
 		// Use basename() function to return the base name of file
 		$fileName = $this->DIR_DOWNLOAD . $chainName .".html";
 		$url = $this->URLS[$chainName][$fileType];
+		// append date() to 'page'
+		$url .= (isset($this->URLS[$chainName]['shouldAppendDateFormatToPage'])) ? 
+			date($this->URLS[$chainName]['shouldAppendDateFormatToPage']) :
+			'';
+		// append date() to 'Stores' for example
+		$url .= (isset($this->URLS[$chainName]['shouldAppendDateFormatToCustom'])) ? 
+			date($this->URLS[$chainName]['shouldAppendDateFormatToCustom']) :
+			'';
 
 		// Use file_get_contents() function to get the file
 		// from url and use file_put_contents() function to
 		// save the file by using base name
-		if(file_put_contents( $fileName,file_get_contents($url))) {
-		    $this->emit("File downloaded successfully: $fileName");
+		if(file_put_contents( $fileName, $this->httpGet($url))) {
+		    $this->emit(0, "File downloaded successfully: $fileName");
 		}
 		else {
-		    $this->emit("File downloading failed: $fileName.");
+		    $this->emit(0, "File downloading failed: $fileName.");
 		}
 		return $fileName;
 	}
 
 	private function downloadCerberusFiles($chainName, $fileType) {
-		$this->emit("downloadCerberusFiles: $chainName / $fileType");
+		$this->emit(0, "downloadCerberusFiles: $chainName / $fileType");
 
 		// Mise en place d'une connexion basique
 		$conn_id = ftp_ssl_connect($this->URLS[$chainName]['ftp_host']);
 
-		$this->emit("downloadCerberusFiles: Ftp connected.");
+		$this->emit(0, "downloadCerberusFiles: Ftp connected.");
 
 		// Identification avec un nom d'utilisateur et un mot de passe
 		$ftp_username = $this->URLS[$chainName]['username'];
@@ -156,12 +181,13 @@ class FoodImporter
 		$login_result = ftp_login($conn_id, $ftp_username, $ftp_password);
 		ftp_pasv($conn_id, TRUE);
 
-		$this->emit("downloadCerberusFiles: Ftp Login successful.");
+		$this->emit(0, "downloadCerberusFiles: Ftp Login successful.");
 
 		// Récupération du contenu d'un dossier
 		$contents = ftp_nlist($conn_id, "./".$fileType."*");
+		$contents = $this->filterUniqueUrlsInArray($contents);
 
-	    $this->emit(count($contents)." files should be downloaded ");
+	    $this->emit(1, count($contents)." files should be downloaded ");
 
 		foreach ($contents as $fileName) {
 			// Confirm we are not download useless files
@@ -173,9 +199,9 @@ class FoodImporter
 
 			// try to download a file from server
 			if(ftp_get($conn_id, $localFilePath, $remoteFilePath, FTP_BINARY)){
-			    $this->emit("Downloaded - $localFilePath ");
+			    $this->emit(0, "Downloaded - $localFilePath ");
 			}else{
-			    $this->emit("Error - $localFilePath ");
+			    $this->emit(0, "Error - $localFilePath ");
 			}
 		}
 
@@ -189,35 +215,51 @@ class FoodImporter
 		else
 			return strlen($str);
 	}
-	function formatFileName($url) {
-		$url = basename($url);
-		$url = substr($url, 0, $this->strLenOrPos($url, '?') );
-		$url = substr($url, 0, $this->strLenOrPos($url, '!') );
-		$url = substr($url, 0, $this->strLenOrPos($url, '#') );
-		return $this->DIR_DOWNLOAD . $url;
+	private function formatOutputFileName($url) {
+
+		stream_context_set_default(
+		    array(
+		        'http' => array(
+		            'method' => 'HEAD',
+		    		'header'=>"Cookie: ".$this->COOKIES."\r\n"
+		        )
+		    )
+		);
+		$headers = get_headers($url, 1);
+		if(isset($headers['Content-Disposition'])) {
+            $tmp_name = explode('=', $headers['Content-Disposition']);
+            if ($tmp_name[1])
+            	return $this->DIR_DOWNLOAD . trim($tmp_name[1],'";\'');
+        }
+
+		$stripped_url = preg_replace('/\\?.*/', '', $url);
+	    return $this->DIR_DOWNLOAD . basename($stripped_url);
 	}
 
 	function downloadFilesFromURLSArray($arr) {
-	    $this->emit("download ".count($arr)." Files (From URLS Array)");
+	    $this->emit(0, "download ".count($arr)." Files (From URLS Array)");
 		$downloadedFiles = array();
 
 		foreach ($arr as $url) {
 
-			$fileName = $this->formatFileName($url);
+	    	$fileContent = $this->httpGet($url);
+			$fileName = $this->formatOutputFileName($url);
 
-			if(file_put_contents($fileName, file_get_contents($url))) {
-			    $this->emit("Downloaded: $fileName");
+	    	$this->emit(0, "downloading $url into $fileName");
+
+			if(file_put_contents($fileName, $fileContent)) {
+			    $this->emit(0, "Downloaded: $fileName");
 			    $downloadedFiles[] = $fileName;
 			}
 			else {
-			    $this->emit("Failed downloading: $fileName");
+			    $this->emit(0, "Failed downloading: $fileName");
 			}
 		}
 		return $downloadedFiles;
 	}
 
 	function pendingFiles($sectionName) {
-		$this->emit("Searching pending files of $sectionName ");
+		$this->emit(0, "Searching pending files of $sectionName ");
 
 		$files = scandir($this->DIR_DOWNLOAD);
 		$pendingFiles = array();
@@ -226,13 +268,13 @@ class FoodImporter
 				$pendingFiles[] = $this->DIR_DOWNLOAD . $fileName;
 		}
 
-		$this->emit("Found ".count($pendingFiles)." files ");
+		$this->emit(0, "Found ".count($pendingFiles)." files ");
 		return $pendingFiles;
 	}
 
 
 	function cleanXmlFile($fileName) {
-		$this->emit("cleanXmlFile $fileName ");
+		$this->emit(0, "cleanXmlFile $fileName ");
 
 		$xml = $this->file_get_contents_utf8($fileName);
 		$realStart = strpos($xml, '<Root>');
@@ -259,41 +301,70 @@ class FoodImporter
 		return $fileName;
 	}
 
-	private function getFilesUrls($url, $fileType = null){
-		$this->emit("getFilesUrls: $url ");
+	private function getFilesUrls($chainName, $htmlFileToParse, $fileType = null){
+		$this->emit(0, "getFilesUrls: $chainName / $htmlFileToParse / $fileType");
 
-		$response = file_get_contents($url);
-		$hrefIndex = strpos($response, 'href="');
+		$response = file_get_contents($htmlFileToParse);
+		$hrefIndex = strpos($response, 'href=');
 		$urls = array();
 		while($hrefIndex !== FALSE) {
+			$delimiter = substr($response, $hrefIndex + 5, 1);
 			$hrefIndex = $hrefIndex + 6;
 			$response = substr($response, $hrefIndex, strlen($response) - $hrefIndex);
-			$url = substr($response, 0, strpos($response, '"'));
+			$url = substr($response, 0, strpos($response, $delimiter));
 			$url = preg_replace('/&amp;/', '&', $url);
-			if(strpos($url, "http") !== FALSE)
+
+			$isSuperPharmLink = (strpos($url, 'getlink') !== FALSE);
+
+			// The URL found should at least contain the 13 numbers of the chain barcode
+			if(strlen($url) > 13 || $isSuperPharmLink)
 			{
-				if(!$fileType || ($fileType && strpos($url, $fileType) !== FALSE))
-					$urls[] = trim($url);
+				// If we filtered urls by file type, we assert the file type keyword (like "Promo")
+				// is indeed in the file name
+				if($isSuperPharmLink || !$fileType || ($fileType && strpos($url, $fileType) !== FALSE)) {
+
+					$url = trim($url);
+
+					// append the base url to the url if no http found
+					if(strpos($url, "http") === FALSE) {
+						$prefix = "";
+						$prefix .= (isset($this->URLS[$chainName]['shouldPrependDownloadFieldForDownload'])) ? $this->URLS[$chainName]['download'] : '';
+						$prefix .= (isset($this->URLS[$chainName]['shouldPrependPageFieldForDownload'])) ? $this->URLS[$chainName]['page'] : '';
+						$prefix .= (isset($this->URLS[$chainName]['shouldAppendDateFormatToPage'])) ? date($this->URLS[$chainName]['shouldAppendDateFormatToPage']).'/' : '';
+						$url = $prefix . $url;
+					}
+
+					// check the url is not a relative path
+					if(strpos($url, "http") == FALSE)
+						$urls[] = $url;
+				}
 			}
-			$hrefIndex = strpos($response, 'href="');
+			$hrefIndex = strpos($response, 'href=');
 		}
+
+		// We can now remove the html file
+		unlink($htmlFileToParse);
+
+		$urls = $this->filterUniqueUrlsInArray($urls);
 		return $urls;
 	}
 
 	private function getJsonFilesUrls($url, $chainName) {
-		$this->emit("getJsonFilesUrls: $url ");
+		$this->emit(0, "getJsonFilesUrls: $url ");
 
-		$response = file_get_contents($url);
+		$response = $this->httpGet($url);
 		$jsonArray = json_decode($response, true);
 		$urls = array();
 		for ($i=0; $i < count($jsonArray); $i++) {
 			$urls[] = $this->URLS[$chainName]['download'].$jsonArray[$i]['FileNm'];
 		}
+
+		$this->emit(0, "getJsonFilesUrls: found ".count($urls)." URLS ");
 		return $urls;
 	}
 
 	function runGzExtractionOnFilesArray($arr) {
-		$this->emit("runGzExtractionOnFilesArray...");
+		$this->emit(0, "runGzExtractionOnFilesArray...");
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
@@ -306,20 +377,20 @@ class FoodImporter
 			$this->XmlBeautify($xmlFileName);
 		}
 
-		$this->emit(count($extractedFileNames)." files extracted ");
+		$this->emit(1, count($extractedFileNames)." files are ready for parsing.");
 		return $extractedFileNames;
 	}
 
 	private function uncompressIfNeeded($fileName) {
-		$this->emit("uncompressIfNeeded: $fileName");
+		$this->emit(0, "uncompressIfNeeded: $fileName");
 		if($this->isGzFile($fileName)) {
 			return $this->extractGZFile($fileName);
 		} else if($this->isZipFile($fileName)) {
 			return $this->extractZipFile($fileName);
 		} else if($this->isRarFile($fileName)) {
-			$this->emit("uncompressIfNeeded: $fileName - extractRarFile function is not implemented yet...");
+			$this->emit(0, "uncompressIfNeeded: $fileName - extractRarFile function is not implemented yet...");
 		} else {
-			$this->emit("uncompressIfNeeded: $fileName - No need...");
+			$this->emit(0, "uncompressIfNeeded: $fileName - No need...");
 			return $fileName;
 		}
 		return;
@@ -336,7 +407,7 @@ class FoodImporter
 		}
 
 		if($isGzipped)
-			$this->emit("isGzFile: $fileName - GZ");
+			$this->emit(0, "isGzFile: $fileName - GZ");
 
 		return $isGzipped;
 	}
@@ -346,7 +417,7 @@ class FoodImporter
 		$fh = @fopen($fileName, "r");
 
 		if (!$fh) {
-		  $this->emit("ERROR: couldn't open $fileName.");
+		  $this->emit(0, "ERROR: couldn't open $fileName.");
 		  return false;
 		}
 
@@ -355,7 +426,7 @@ class FoodImporter
 		fclose($fh);
 
 		if (strpos($blob, 'PK') !== false) {
-			$this->emit("isZipFile: $fileName - Zip");
+			$this->emit(0, "isZipFile: $fileName - Zip");
 			return true;
 		}
 		return;
@@ -366,7 +437,7 @@ class FoodImporter
 		$fh = @fopen($fileName, "r");
 
 		if (!$fh) {
-		  $this->emit("ERROR: couldn't open $fileName.");
+		  $this->emit(0, "ERROR: couldn't open $fileName.");
 		  return false;
 		}
 
@@ -375,14 +446,14 @@ class FoodImporter
 		fclose($fh);
 
 		if (strpos($blob, 'Rar') !== false) {
-			$this->emit("isZipFile: $fileName - Rar");
+			$this->emit(0, "isZipFile: $fileName - Rar");
 			return true;
 		}
 		return;
 	}
 
 	private function extractGZFile($fileName) {
-		$this->emit("extractGZFile: $fileName");
+		$this->emit(0, "extractGZFile: $fileName");
 
 		// Raising this value may increase performance
 		$buffer_size = 4096; // read 4kb at a time
@@ -408,7 +479,7 @@ class FoodImporter
 	}
 
 	private function extractZipFile($fileName) {
-		$this->emit("extractZipFile: $fileName");
+		$this->emit(0, "extractZipFile: $fileName");
 
 		$zip = new ZipArchive;
 		$res = $zip->open($fileName);
@@ -424,24 +495,24 @@ class FoodImporter
 	function insertChain($ChainID) {
 	  $Chain = $this->httpPost(
 	  	"/RefChain/insertRefChain.php", 
-	  	array("ChainCode" => $ChainID)
+	  	array("ChainID" => $ChainID)
 	  );
 	  return $Chain['ChainID'];
 	}
 
-	function xmlStringToArray($myXMLData) {
+	private function xmlStringToArray($myXMLData) {
 		$xml = simplexml_load_string($myXMLData);
 		if ($xml === false) {
-		    $this->emit("Failed loading XML: ");
+		    $this->emit(1, "Failed loading XML: ");
 		    foreach(libxml_get_errors() as $error) {
-		        $this->emit($error->message);
+		        $this->emit(1, $error->message);
 		    }
 		} else {
 		    return $xml;
 		}
 	}
 
-	function httpPost($route, $data, $returnJson=true, $toApi=true) {
+	private function httpPost($route, $data, $returnJson=true, $toApi=true) {
 
 		$url = $toApi ? $this->API_DOMAIN . $route : $route;
 
@@ -463,11 +534,42 @@ class FoodImporter
 			return $result;
 	}
 
+	private function httpGet($url) {
+		if (filter_var($url, FILTER_VALIDATE_URL) === FALSE)
+		    return;
+		// Create a stream
+		$opts = array(
+		  'http'=>array(
+		    'method'=>"GET",
+		    'header'=>"Cookie: ".$this->COOKIES
+		  )
+		);
+
+		$context = stream_context_create($opts);
+
+		// Open the file using the HTTP headers set above
+		$file = file_get_contents($url, false, $context);
+
+		foreach($http_response_header as $header)
+	    {
+	        if (strpos(strtolower($header),'set-cookie') !== false)
+	        {
+	            $tmp_name = explode(';', $header);
+	            if ($tmp_name[0]) {
+	            	$setCookieValue = trim(substr($tmp_name[0], 12));
+	            	$this->COOKIES = $setCookieValue;
+	            }
+	        }
+	    }
+
+	    return $file;
+
+	}
 	function saveStrAsFile($str, $fileName) {
 		if(file_put_contents($fileName, $str))
-			$this->emit("$fileName saved ");
+			$this->emit(0, "$fileName saved ");
 		else
-			$this->emit("Cannot save $fileName ");
+			$this->emit(0, "Cannot save $fileName ");
 		return $fileName;
 	}
 
@@ -477,7 +579,7 @@ class FoodImporter
 
 	function XmlBeautify($fileName){
 
-		$this->emit("XmlBeautify($fileName) ");
+		$this->emit(0, "XmlBeautify($fileName) ");
 
 		$xml = file_get_contents($fileName);
 
@@ -525,7 +627,7 @@ class FoodImporter
 	}
 
 	function removeDuplicatesOlderFiles() {
-		$this->emit("removeDuplicatesOlderFiles... ");
+		$this->emit(0, "removeDuplicatesOlderFiles... ");
 
 		$files = scandir($this->DIR_DOWNLOAD);
 		$uniqueFiles = array();
@@ -535,30 +637,82 @@ class FoodImporter
 			$fileDate = $matches[2][0];
 			$fileExt = $matches[3][0];
 
+			if(empty($fileKey)) continue;
+
 			// index the fileKey
 			if(!isset($uniqueFiles[$fileKey])) {
-				$this->emit("indexing $fileKey ");
+				$this->emit(0, "indexing $fileKey ");
 				$uniqueFiles[$fileKey] = $fileDate;
 			}
 			// compare
-			else if($uniqueFiles[$fileKey] < $fileDate) {
+			else if($uniqueFiles[$fileKey] <= $fileDate) {
 				// previous file saved is older, delete it
 				$previousFileName = $this->DIR_DOWNLOAD.$fileKey.'-'.$uniqueFiles[$fileKey].$fileExt;
-				$this->emit("delete $previousFileName");
+				$this->emit(0, "delete $previousFileName");
 				unlink($previousFileName);
 				$uniqueFiles[$fileKey] = $fileDate;
-				$this->emit("keep ".$uniqueFiles[$fileKey]."");
+				$this->emit(0, "keep ".$uniqueFiles[$fileKey]."");
 			}
 			else if($uniqueFiles[$fileKey] > $fileDate) {
 				// the current fileName is older, delete it
-				$this->emit("delete ".$this->DIR_DOWNLOAD.$fileName."");
+				$this->emit(0, "delete ".$this->DIR_DOWNLOAD.$fileName."");
 				unlink($this->DIR_DOWNLOAD.$fileName);
-				$this->emit("keep ".$uniqueFiles[$fileKey]."");
+				$this->emit(0, "keep ".$uniqueFiles[$fileKey]."");
 			}
 		}
 	}
 
-	private function detect_utf_encoding($filename) {
+
+	function filterUniqueUrlsInArray($arr) {
+		$this->emit(0, "filterUniqueUrlsInArray with ".count($arr)." URLs");
+
+		$uniqueFiles = array();
+		foreach ($arr as $fileName) {
+			preg_match('/([A-Za-z0-9\-]*)-([0-9]*)(\..*)/', $fileName, $matches, PREG_OFFSET_CAPTURE);
+			$fileKey = $matches[1][0];
+			$fileDate = $matches[2][0];
+			$fileExt = $matches[3][0];
+
+			// index the fileKey
+			if(!isset($uniqueFiles[$fileKey])) {
+				$this->emit(0, "indexing $fileKey ");
+				$uniqueFiles[$fileKey] = array('fileDate' => $fileDate, 'fileName' => $fileName);
+			}
+			// compare
+			else if($uniqueFiles[$fileKey]['fileDate'] <= $fileDate) {
+				$uniqueFiles[$fileKey]['fileDate'] = $fileDate;
+				$this->emit(0, "keep ".$uniqueFiles[$fileKey]['fileName']);
+			}
+			else if($uniqueFiles[$fileKey]['fileDate'] > $fileDate) {
+				$this->emit(0, "keep ".$uniqueFiles[$fileKey]['fileName']);
+			}
+		}
+
+		$returnUrls = array();
+		foreach ($uniqueFiles as $key => $value) {
+			$returnUrls[] = $uniqueFiles[$key]['fileName'];
+		}
+
+		return $returnUrls;
+	}
+
+	private function callUrlsAndExtractFileUrlsFromJson($arr) {
+		$this->emit(0, "callUrlsAndExtractFileUrlsFromJson");
+		$fileUrls = array();
+
+		foreach ($arr as $url) {
+			$this->emit(0, "Call $url");
+			$json = $this->httpGet($url);
+			$json = json_decode($json, true);
+
+			if($json['status'] === 0) {
+				$parsedUrl = parse_url($url);
+				$fileUrls[] = $parsedUrl["scheme"] . '://' . $parsedUrl["host"] . $json['href'];
+			}
+		}
+		return $fileUrls;
+	}
+	private function detect_encoding($filename) {
 		// Unicode BOM is U+FEFF, but after encoded, it will look like this.
 		$UTF32_BIG_ENDIAN_BOM = chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF);
 		$UTF32_LITTLE_ENDIAN_BOM = chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00);
@@ -579,9 +733,9 @@ class FoodImporter
 
 	function file_get_contents_utf8($fn) {
 		$content = file_get_contents($fn);
-		$encoding = $this->detect_utf_encoding($fn);
+		$encoding = $this->detect_encoding($fn);
 
-		$this->emit("file_get_contents_utf8: detected encoding ".$encoding);
+		$this->emit(0, "file_get_contents_utf8: detected encoding ".$encoding);
 
 		switch ($encoding) {
 			case 'UTF-8':
@@ -611,15 +765,18 @@ class FoodImporter
 
 	// Loads the stores file list, identify the ChainCode, and runs on the stores list to save each store with its name and the ChainID
 	function parseXMLStores($storeXmlFileName) {
-		$this->emit("parseXMLStores $storeXmlFileName ");
+		$this->emit(0, "parseXMLStores $storeXmlFileName ");
 
 		$XMLfileContent = file_get_contents($storeXmlFileName);
 		$xml = $this->xmlStringToArray($XMLfileContent);
 
-	    $ChainID = $xml->CHAINID;
-	    $this->emit("ChainID found: $ChainID ");
+	    $ChainID = $xml->xpath('//CHAINID')[0];
+	    $this->emit(1, "ChainID found: $ChainID ");
 
-	    $Stores = $xml->xpath('//STORES')[0];
+	    $this->insertChain($ChainID);
+
+	    $Stores = $xml->xpath('//STOREID')[0];
+	    $Stores = $Stores->xpath("..")[0]->xpath("..")[0];
 
 	    $newStores = array();
 
@@ -635,7 +792,7 @@ class FoodImporter
 			);
 	    }
 
-	    $this->emit("Should insert ".count($newStores)." stores ");
+	    $this->emit(1, "Should insert ".count($newStores)." stores ");
 
 	   	for ($i=0; $i < ceil(count($newStores)/50)*50; $i+=50) {
 
@@ -648,10 +805,10 @@ class FoodImporter
 
 		    if($insertStore['error']){
 		    	$shouldKeepFile = true;
-		    	$this->emit($insertStore['message']."");
+		    	$this->emit(0, $insertStore['message']."");
 		    }
 		    else {
-		    	$this->emit("Updated ".count($payload['stores'])." stores of ChainID $ChainID");
+		    	$this->emit(1, "Updated ".count($payload['stores'])." stores of ChainID $ChainID");
 		    }
 	   	}
 
@@ -665,7 +822,7 @@ class FoodImporter
 
 	function parseXMLPriceFull($priceFullXmlFileName) {
 
-		$this->emit("parseXMLPriceFull $priceFullXmlFileName ");
+		$this->emit(0, "parseXMLPriceFull $priceFullXmlFileName ");
 
 		$XMLfileContent = file_get_contents($priceFullXmlFileName);
 		$xml = $this->xmlStringToArray($XMLfileContent);
@@ -676,7 +833,7 @@ class FoodImporter
 		$SubChainId = 	$xml->SubChainId;
 		$StoreId 	= 	$xml->StoreId;
 
-	    $this->emit("ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
+	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
 
 		// Preparing data for Items
 		$newItems = array();
@@ -699,7 +856,7 @@ class FoodImporter
 			);
 		}
 
-		$this->emit("Should insert ".count($newItems)." items ");
+		$this->emit(1, "Should insert ".count($newItems)." items ");
 
 	   	for ($i=0; $i < ceil(count($newItems)/50)*50; $i+=50) {
 
@@ -717,10 +874,10 @@ class FoodImporter
 
 		    if($insertItems['error']) {
 		    	$shouldKeepFile = true;
-		    	$this->emit($insertItems['message']."");
+		    	$this->emit(1, $insertItems['message']."");
 		    }
 		    else {
-		    	$this->emit("Updated ".count($payload['items'])." items of ChainID $ChainID");
+		    	$this->emit(1, "Updated ".count($payload['items'])." items of ChainID $ChainID");
 		    }
 	   	}
 
@@ -731,6 +888,7 @@ class FoodImporter
 	    return;
 	}
 	function download($chainName, $fileType) {
+		$this->emit(1, "Download $chainName - $fileType");
 		// Download from Cerberus FTP of the Chain
 		if(isset($this->URLS[$chainName]['ftp_host'])){
 			$this->downloadCerberusFiles($chainName, $fileType);
@@ -738,30 +896,45 @@ class FoodImporter
 			$this->runGzExtractionOnFilesArray($gzipXmlFiles);
 		}
 		// Download from a public HTML file depending on the filetype
-		else if(isset($this->URLS[$chainName]['html']) && !isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
-			$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
-			$urls = $this->getFilesUrls($storePublicPage);
-			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
-			$this->runGzExtractionOnFilesArray($downloadedFiles);
-		}
-		// Download from a public HTML file containing a whole list
-		else if(isset($this->URLS[$chainName]['html']) && isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
-			$storePublicPage = $this->importHtmlPublicPage($chainName, 'page');
-			$urls = $this->getFilesUrls($storePublicPage, $fileType);
-			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
-			$this->runGzExtractionOnFilesArray($downloadedFiles);
+		else if(isset($this->URLS[$chainName]['html'])) {
+
+			// the filetype URLs are ready to be called
+			// but the links on the page should be filtered
+			// depending on the fileType
+			if(!isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
+				$storePublicPage = $this->importHtmlPublicPage($chainName, $fileType);
+				$urls = $this->getFilesUrls($chainName, $storePublicPage);
+
+				// specific for superpharm
+				if($chainName == 'superpharm') {
+					$urls = $this->callUrlsAndExtractFileUrlsFromJson($urls);
+				}
+				$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
+				$this->runGzExtractionOnFilesArray($downloadedFiles);
+			}
+			// Download from a public HTML file containing a whole list
+			// the filetype URLs are ready to be called
+			// but the links on the page should be filtered
+			// depending on the fileType
+			else if(isset($this->URLS[$chainName]['shouldFiltersLinks'])) {
+				$storePublicPage = $this->importHtmlPublicPage($chainName, 'page');
+				$urls = $this->getFilesUrls($chainName, $storePublicPage, $fileType);
+				$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
+				$this->runGzExtractionOnFilesArray($downloadedFiles);
+			}
 		}
 		// Download from a public JSON API depending on the filetype
 		else if(isset($this->URLS[$chainName]['json'])) {
-			$urls = $this->getJsonFilesUrls($this->URLS[$chainName][$fileType]."&WDate=".date("d/m/Y"), $chainName);
+			$urls = $this->getJsonFilesUrls($this->URLS[$chainName][$fileType]."&WDate=".date($this->URLS[$chainName]['shouldAppendDateFormatToPage']), $chainName);
 			$downloadedFiles = $this->downloadFilesFromURLSArray($urls);
 			$this->runGzExtractionOnFilesArray($downloadedFiles);
 		}
 		else {
-			$this->emit("Could not download $fileType files of $chainName. Some configuration are missing.");
+			$this->emit(0, "Could not download $fileType files of $chainName. Some configuration are missing.");
 		}
 	}
 	function parseXML($fileType) {
+		$this->removeDuplicatesOlderFiles();
 		$xmlFiles = $this->pendingFiles($fileType);
 
 		if($fileType == 'Stores') {
@@ -774,5 +947,12 @@ class FoodImporter
 				$this->parseXMLPriceFull($xmlFile);
 			}
 		}
+	}
+
+	function syncAllStores() {
+		foreach ($this->URLS as $chainKey => $value) {
+			$this->download($chainKey, 'Stores');
+		}
+		$this->parseXML('Stores');
 	}
 }

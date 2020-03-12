@@ -5,13 +5,13 @@
 	
 	try {
 
-		requireFields(['ChainCode']);
+		requireFields(['ChainID']);
 
-		// Check if ChainCode already exists
-		$stmt = $mysqli->prepare("SELECT ChainID FROM `FoodTech`.`RefChain` WHERE `ChainCode` = ? LIMIT 1");
+		// Check if ChainID already exists
+		$stmt = $mysqli->prepare("SELECT ChainID FROM `FoodTech`.`RefChain` WHERE `ChainID` = ? LIMIT 1");
 		
 		$stmt->bind_param('s',
-			$_PHP_INPUT['ChainCode']
+			$_PHP_INPUT['ChainID']
 		);
 
 		$items = array();
@@ -29,11 +29,11 @@
 			// STEP 2: Inserting 
 			$stmt = $mysqli->prepare("INSERT INTO 
 				`FoodTech`.`RefChain` 
-				(`ChainCode`) 
+				(`ChainID`) 
 				VALUES (?)");
 
 			$stmt->bind_param('s',
-				$_PHP_INPUT['ChainCode']
+				$_PHP_INPUT['ChainID']
 			);
 			$stmt->execute() or die($mysqli->error);
 

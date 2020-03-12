@@ -43,18 +43,25 @@ $fi = new FoodImporter();
 if (isset($argc)) {
 	switch ($argv[1]) {
 		case 'download':
+			$fi->LOG_LEVEL = 0;
 			$chainName = $argv[2];
 			$fileType = $argv[3];
 			$fi->download($chainName, $fileType);
 			break;
 
 		case 'parse':
+			$fi->LOG_LEVEL = 0;
 			$fileType = $argv[2];
 			$fi->parseXML($fileType);
 			break;
 
 		case 'extract':
+			$fi->LOG_LEVEL = 0;
 			$fi->runGzExtractionOnFilesArray(array($argv[2]));
+
+		case 'stores':
+			$fi->LOG_LEVEL = 1;
+			$fi->syncAllStores();
 
 		default:
 			# code...
