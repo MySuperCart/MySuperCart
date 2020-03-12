@@ -31,9 +31,10 @@
 
 			// FINISHING
 			echo json_encode(array('error' => false, 'ChainID' => $stmt->insert_id), JSON_PRETTY_PRINT); 
+
+			$stmt->close();
+
         }
-        
-		$stmt->close();
 
 	} catch (Exception $e) {
 		echo json_encode(array('error' => true, 'message' => $e->getMessage()), JSON_PRETTY_PRINT); 
