@@ -7,22 +7,11 @@
 
 		requireFields(['ChainID']);
 
+		$_ChainID = $_PHP_INPUT['ChainID'];
 		// Check if ChainID already exists
-		$stmt = $mysqli->prepare("SELECT ChainID FROM `FoodTech`.`RefChain` WHERE `ChainID` = ? LIMIT 1");
-		
-		$stmt->bind_param('s',
-			$_PHP_INPUT['ChainID']
-		);
-
-		$items = array();
-		$stmt->execute() or die($mysqli->error);
-		$result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-        	$items[] = $row;
-        }
-
-        if(count($items)) {
-        	echo json_encode(array('error' => false, 'RefChain' => $row), JSON_PRETTY_PRINT); 
+		$query = $mysqli->query("SELECT `ChainID` FROM `FoodTech`.`RefChain` WHERE `ChainID` = '$_ChainID' LIMIT 1");
+		if($query->num_rows) {
+        	echo json_encode(array('error' => false, 'RefChain' => $query->fetch_object()->ChainID), JSON_PRETTY_PRINT); 
         }
 
         else {
@@ -33,7 +22,7 @@
 				VALUES (?)");
 
 			$stmt->bind_param('s',
-				$_PHP_INPUT['ChainID']
+				$_ChainID
 			);
 			$stmt->execute() or die($mysqli->error);
 
