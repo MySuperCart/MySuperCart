@@ -14,6 +14,7 @@ class FoodImporter
 			'json' => true,
 			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx",
 			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'PriceFull' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'download' => "https://www.kingstore.co.il/Food_Law/Download/",
 			'shouldAppendDateFormatToPage' => "m/d/Y"
 		),
@@ -21,6 +22,7 @@ class FoodImporter
 			'json' => true,
 			'page' => "http://maayan2000.binaprojects.com/Main.aspx",
 			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'PriceFull' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'download' => "http://maayan2000.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -35,6 +37,7 @@ class FoodImporter
 			'json' => true,
 			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx",
 			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'PriceFull' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'download' => "http://zolvebegadol.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -56,6 +59,7 @@ class FoodImporter
 			'html' => true,
 			'page' => "http://prices.super-pharm.co.il/",
 			'Stores' => "http://prices.super-pharm.co.il/?type=StoresFull&store=&date=",
+			'PriceFull' => "http://prices.super-pharm.co.il/?type=PriceFull&store=&date=",
 			'shouldAppendDateFormatToCustom' => "Y-m-d",
 			'shouldPrependPageFieldForDownload' => true
 		),
@@ -66,6 +70,7 @@ class FoodImporter
 			'json' => true,
 			'page' => "http://shuk-hayir.binaprojects.com/Main.aspx",
 			'Stores' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'PriceFull' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'download' => "http://shuk-hayir.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -73,6 +78,7 @@ class FoodImporter
 			'json' => true,
 			'page' => "http://shefabirkathashem.binaprojects.com/Main.aspx",
 			'Stores' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
+			'PriceFull' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'download' => "http://shefabirkathashem.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -216,21 +222,23 @@ class FoodImporter
 			return strlen($str);
 	}
 	private function formatOutputFileName($url) {
-
-		stream_context_set_default(
-		    array(
-		        'http' => array(
-		            'method' => 'HEAD',
-		    		'header'=>"Cookie: ".$this->COOKIES."\r\n"
-		        )
-		    )
-		);
-		$headers = get_headers($url, 1);
-		if(isset($headers['Content-Disposition'])) {
-            $tmp_name = explode('=', $headers['Content-Disposition']);
-            if ($tmp_name[1])
-            	return $this->DIR_DOWNLOAD . trim($tmp_name[1],'";\'');
-        }
+		if (filter_var($url, FILTER_VALIDATE_URL) !== FALSE) {
+			stream_context_set_default(
+			    array(
+			        'http' => array(
+			            'method' => 'HEAD',
+			    		'header'=>"Cookie: ".$this->COOKIES."\r\n",
+			    		'timeout' => 5
+			        )
+			    )
+			);
+			$headers = get_headers($url, 1);
+			if(isset($headers['Content-Disposition'])) {
+	            $tmp_name = explode('=', $headers['Content-Disposition']);
+	            if ($tmp_name[1])
+	            	return $this->DIR_DOWNLOAD . trim($tmp_name[1],'";\'');
+	        }
+	    }
 
 		$stripped_url = preg_replace('/\\?.*/', '', $url);
 	    return $this->DIR_DOWNLOAD . basename($stripped_url);
@@ -334,6 +342,9 @@ class FoodImporter
 						$url = $prefix . $url;
 					}
 
+					// ensure the url does not contains \ instead of /
+					$url = str_replace('\\', '/', $url);
+
 					// check the url is not a relative path
 					if(strpos($url, "http") == FALSE)
 						$urls[] = $url;
@@ -368,6 +379,8 @@ class FoodImporter
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
+			if(substr($fileName, -3) === 'xml') continue;
+
 			$xmlFileName = $this->uncompressIfNeeded($fileName);
 			$extractedFileNames[] = $xmlFileName;
 
@@ -773,8 +786,9 @@ class FoodImporter
 	    $ChainID = $xml->xpath('//CHAINID')[0];
 	    $this->emit(1, "ChainID found: $ChainID ");
 	    $ChainName = $xml->xpath('//CHAINNAME');
-	    $ChainName = count($ChainName) ? $ChainName[0] : '';
-	    $this->insertChain($ChainID, $ChainName);
+	    $ChainName = count($ChainName) ? $ChainName[0] : "";
+
+	    $this->insertChain(strval($ChainID), strval($ChainName));
 
 	    $Stores = $xml->xpath('//STOREID')[0];
 	    $Stores = $Stores->xpath("..")[0]->xpath("..")[0];
@@ -883,7 +897,7 @@ class FoodImporter
 	   	}
 
 	    if(!isset($shouldKeepFile)) {
-	    	unlink($priceFullXmlFileName);
+	    	// unlink($priceFullXmlFileName);
 	    }
 
 	    return;
@@ -935,8 +949,19 @@ class FoodImporter
 		}
 	}
 	function parseXML($fileType) {
-		$this->removeDuplicatesOlderFiles();
-		$xmlFiles = $this->pendingFiles($fileType);
+		// $this->removeDuplicatesOlderFiles();
+		// $xmlFiles = $this->pendingFiles($fileType);
+		$xmlFiles = array();
+
+		$jeruSnifs = array(
+		"7290027600007-",
+		"7290492000005-",
+		"7290803800003-",
+		"7290172900007-",
+		"7290661400001-");
+		foreach ($jeruSnifs as $snif) {
+			$xmlFiles = array_merge($xmlFiles, $this->pendingFiles($snif));
+		}
 
 		if($fileType == 'Stores') {
 			foreach ($xmlFiles as $xmlFile) {
@@ -950,10 +975,24 @@ class FoodImporter
 		}
 	}
 
+	function extractAll() {
+		$this->removeDuplicatesOlderFiles();
+		$downloadedFiles = $this->pendingFiles('.gz');
+		$this->runGzExtractionOnFilesArray($downloadedFiles);
+	}
+
 	function syncAllStores() {
 		foreach ($this->URLS as $chainKey => $value) {
 			$this->download($chainKey, 'Stores');
 		}
 		$this->parseXML('Stores');
+	}
+
+
+	function syncAllPriceFull() {
+		foreach ($this->URLS as $chainKey => $value) {
+			$this->download($chainKey, 'PriceFull');
+		}
+		// $this->parseXML('PriceFull');
 	}
 }

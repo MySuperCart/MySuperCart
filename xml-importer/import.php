@@ -63,6 +63,18 @@ if (isset($argc)) {
 			$fi->LOG_LEVEL = 1;
 			$fi->syncAllStores();
 
+		case 'pricefull':
+			$fi->LOG_LEVEL = 0;
+			$fi->syncAllPriceFull();
+
+		case 'insertChain':
+			$fi->LOG_LEVEL = 0;
+			$fi->insertChain("7290027600007", "Shufersal");
+
+		case 'extractAll':
+			$fi->LOG_LEVEL = 0;
+			$fi->extractAll();
+
 		default:
 			# code...
 			break;
