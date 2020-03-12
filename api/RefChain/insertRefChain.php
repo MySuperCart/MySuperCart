@@ -7,8 +7,8 @@
 
 		requireFields(['ChainID', 'ChainName']);
 
-		$_ChainID = $_PHP_INPUT['ChainID'];
-		$_ChainName = $_PHP_INPUT['ChainName'];
+		$_ChainID = strval($_PHP_INPUT['ChainID']);
+		$_ChainName = strval($_PHP_INPUT['ChainName']);
 
 		// Check if ChainID already exists
 		$query = $mysqli->query("SELECT `ChainID` FROM `FoodTech`.`RefChain` WHERE `ChainID` = '$_ChainID' LIMIT 1");
