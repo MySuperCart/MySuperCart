@@ -15,6 +15,7 @@ class FoodImporter
 			'page' => "https://www.kingstore.co.il/Food_Law/Main.aspx",
 			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=4",
+			'Price' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=2",
 			'download' => "https://www.kingstore.co.il/Food_Law/Download/",
 			'shouldAppendDateFormatToPage' => "m/d/Y"
 		),
@@ -23,6 +24,7 @@ class FoodImporter
 			'page' => "http://maayan2000.binaprojects.com/Main.aspx",
 			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
+			'Price' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
 			'download' => "http://maayan2000.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -38,6 +40,7 @@ class FoodImporter
 			'page' => "http://zolvebegadol.binaprojects.com/Main.aspx",
 			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
+			'Price' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
 			'download' => "http://zolvebegadol.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -60,6 +63,7 @@ class FoodImporter
 			'page' => "http://prices.super-pharm.co.il/",
 			'Stores' => "http://prices.super-pharm.co.il/?type=StoresFull&store=&date=",
 			'PriceFull' => "http://prices.super-pharm.co.il/?type=PriceFull&store=&date=",
+			'Price' => "http://prices.super-pharm.co.il/?type=Price&store=&date=",
 			'shouldAppendDateFormatToCustom' => "Y-m-d",
 			'shouldPrependPageFieldForDownload' => true
 		),
@@ -71,6 +75,7 @@ class FoodImporter
 			'page' => "http://shuk-hayir.binaprojects.com/Main.aspx",
 			'Stores' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
+			'Price' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
 			'download' => "http://shuk-hayir.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -79,13 +84,15 @@ class FoodImporter
 			'page' => "http://shefabirkathashem.binaprojects.com/Main.aspx",
 			'Stores' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
+			'Price' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
 			'download' => "http://shefabirkathashem.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
 		'shufersal' => array(
 			'html' => true,
 			'Stores' => 'http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=5&storeId=0',
-			'PriceFull' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=2&storeId=0&asort=Time&sortdir=DESC&sort=Time"
+			'PriceFull' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=2&storeId=0&asort=Time&sortdir=DESC&sort=Time",
+			'Price' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=1&storeId=0&asort=Time&sortdir=DESC&sort=Time"
 		),
 		'ramilevi' => array(
 			'ftp_host' => 'url.retail.publishedprices.co.il',
@@ -329,7 +336,7 @@ class FoodImporter
 			{
 				// If we filtered urls by file type, we assert the file type keyword (like "Promo")
 				// is indeed in the file name
-				if($isSuperPharmLink || !$fileType || ($fileType && strpos($url, $fileType) !== FALSE)) {
+				if($isSuperPharmLink || !$fileType || ($fileType && strpos($url, $fileType.'729') !== FALSE)) {
 
 					$url = trim($url);
 
@@ -981,18 +988,11 @@ class FoodImporter
 		$this->runGzExtractionOnFilesArray($downloadedFiles);
 	}
 
-	function syncAllStores() {
+	function syncAll($fileType) {
 		foreach ($this->URLS as $chainKey => $value) {
-			$this->download($chainKey, 'Stores');
+			$this->download($chainKey, $fileType);
 		}
-		$this->parseXML('Stores');
+		$this->parseXML($fileType);
 	}
 
-
-	function syncAllPriceFull() {
-		foreach ($this->URLS as $chainKey => $value) {
-			$this->download($chainKey, 'PriceFull');
-		}
-		$this->parseXML('PriceFull');
-	}
 }

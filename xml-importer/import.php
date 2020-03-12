@@ -60,12 +60,16 @@ if (isset($argc)) {
 			$fi->runGzExtractionOnFilesArray(array($argv[2]));
 
 		case 'stores':
-			$fi->LOG_LEVEL = 2;
-			$fi->syncAllStores();
+			$fi->LOG_LEVEL = 1;
+			$fi->syncAll('Stores');
 
 		case 'pricefull':
 			$fi->LOG_LEVEL = 1;
-			$fi->syncAllPriceFull();
+			$fi->syncAll('PriceFull');
+
+		case 'price':
+			$fi->LOG_LEVEL = 1;
+			$fi->syncAll('Price');
 
 		case 'insertChain':
 			$fi->LOG_LEVEL = 2;
