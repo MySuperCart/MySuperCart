@@ -993,6 +993,6 @@ class FoodImporter
 		foreach ($this->URLS as $chainKey => $value) {
 			$this->download($chainKey, 'PriceFull');
 		}
-		// $this->parseXML('PriceFull');
+		$this->parseXML('PriceFull');
 	}
 }
