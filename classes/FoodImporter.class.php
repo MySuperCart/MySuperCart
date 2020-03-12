@@ -844,27 +844,27 @@ class FoodImporter
 
 
 		// Preparing data for ETLLoad
-	    $ChainID 	= 	$xml->ChainId;
-		$SubChainId = 	$xml->SubChainId;
-		$StoreId 	= 	$xml->StoreId;
+	    $ChainID 	= 	$xml->CHAINID;
+		$SubChainId = 	$xml->SUBCHAINID;
+		$StoreId 	= 	$xml->STOREID;
 
 	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
 
 		// Preparing data for Items
 		$newItems = array();
-		foreach($xml->Items->children() as $Item) {
+		foreach($xml->ITEMS->children() as $Item) {
 
 			$newItems[] = array(
-				"PriceUpdateDate" 				=> (string) $Item->PriceUpdateDate,
-				"ItemCode" 						=> (string) $Item->ItemCode,
-				"ItemPrice" 					=> (string) $Item->ItemPrice,
-				"ItemName" 						=> (string) $Item->ItemName,
-				"ManufacturerName" 				=> (string) $Item->ManufacturerName,
-				"ManufactureCountry" 			=> (string) $Item->ManufactureCountry,
-				"ManufacturerItemDescription" 	=> (string) $Item->ManufacturerItemDescription,
-				"UnitQty" 						=> (string) $Item->UnitQty,
-				"Quantity" 						=> (string) $Item->Quantity,
-				"UnitOfMeasure" 				=> (string) $Item->UnitOfMeasure,
+				"PriceUpdateDate" 				=> (string) $Item->PRICEUPDATEDATE,
+				"ItemCode" 						=> (string) $Item->ITEMCODE,
+				"ItemPrice" 					=> (string) $Item->ITEMPRICE,
+				"ItemName" 						=> (string) $Item->ITEMNAME,
+				"ManufacturerName" 				=> (string) $Item->MANUFACTURERNAME,
+				"ManufactureCountry" 			=> (string) $Item->MANUFACTURECOUNTRY,
+				"ManufacturerItemDescription" 	=> (string) $Item->MANUFACTURERITEMDESCRIPTION,
+				"UnitQty" 						=> (string) $Item->UNITQTY,
+				"Quantity" 						=> (string) $Item->QUANTITY,
+				"UnitOfMeasure" 				=> (string) $Item->UNITOFMEASURE,
 				"CurrencyCode" 					=> (string) 'nis',
 				"SourceTypeID" 					=> (string) 1,
 				"ItemImageID" 					=> (string) 0
@@ -897,7 +897,7 @@ class FoodImporter
 	   	}
 
 	    if(!isset($shouldKeepFile)) {
-	    	// unlink($priceFullXmlFileName);
+	    	unlink($priceFullXmlFileName);
 	    }
 
 	    return;

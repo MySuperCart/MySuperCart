@@ -43,36 +43,36 @@ $fi = new FoodImporter();
 if (isset($argc)) {
 	switch ($argv[1]) {
 		case 'download':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$chainName = $argv[2];
 			$fileType = $argv[3];
 			$fi->download($chainName, $fileType);
 			break;
 
 		case 'parse':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$fileType = $argv[2];
 			$fi->parseXML($fileType);
 			break;
 
 		case 'extract':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$fi->runGzExtractionOnFilesArray(array($argv[2]));
 
 		case 'stores':
-			$fi->LOG_LEVEL = 1;
+			$fi->LOG_LEVEL = 2;
 			$fi->syncAllStores();
 
 		case 'pricefull':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$fi->syncAllPriceFull();
 
 		case 'insertChain':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$fi->insertChain("7290027600007", "Shufersal");
 
 		case 'extractAll':
-			$fi->LOG_LEVEL = 0;
+			$fi->LOG_LEVEL = 2;
 			$fi->extractAll();
 
 		default:
