@@ -849,7 +849,6 @@ class FoodImporter
 		$XMLfileContent = file_get_contents($priceFullXmlFileName);
 		$xml = $this->xmlStringToArray($XMLfileContent);
 
-
 		// Preparing data for ETLLoad
 	    $ChainID 	= 	$xml->CHAINID;
 		$SubChainId = 	$xml->SUBCHAINID;
@@ -858,35 +857,35 @@ class FoodImporter
 	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
 
 		// Preparing data for Items
-		$newItems = array();
-		foreach($xml->ITEMS->children() as $Item) {
+		// $newItems = array();
+		// foreach($xml->ITEMS->children() as $Item) {
 
-			$newItems[] = array(
-				"PriceUpdateDate" 				=> (string) $Item->PRICEUPDATEDATE,
-				"ItemCode" 						=> (string) $Item->ITEMCODE,
-				"ItemPrice" 					=> (string) $Item->ITEMPRICE,
-				"ItemName" 						=> (string) $Item->ITEMNAME,
-				"ManufacturerName" 				=> (string) $Item->MANUFACTURERNAME,
-				"ManufactureCountry" 			=> (string) $Item->MANUFACTURECOUNTRY,
-				"ManufacturerItemDescription" 	=> (string) $Item->MANUFACTURERITEMDESCRIPTION,
-				"UnitQty" 						=> (string) $Item->UNITQTY,
-				"Quantity" 						=> (string) $Item->QUANTITY,
-				"UnitOfMeasure" 				=> (string) $Item->UNITOFMEASURE,
-				"CurrencyCode" 					=> (string) 'nis',
-				"SourceTypeID" 					=> (string) 1,
-				"ItemImageID" 					=> (string) 0
-			);
-		}
+		// 	$newItems[] = array(
+		// 		"PriceUpdateDate" 				=> (string) $Item->PRICEUPDATEDATE,
+		// 		"ItemCode" 						=> (string) $Item->ITEMCODE,
+		// 		"ItemPrice" 					=> (string) $Item->ITEMPRICE,
+		// 		"ItemName" 						=> (string) $Item->ITEMNAME,
+		// 		"ManufacturerName" 				=> (string) $Item->MANUFACTURERNAME,
+		// 		"ManufactureCountry" 			=> (string) $Item->MANUFACTURECOUNTRY,
+		// 		"ManufacturerItemDescription" 	=> (string) $Item->MANUFACTURERITEMDESCRIPTION,
+		// 		"UnitQty" 						=> (string) $Item->UNITQTY,
+		// 		"Quantity" 						=> (string) $Item->QUANTITY,
+		// 		"UnitOfMeasure" 				=> (string) $Item->UNITOFMEASURE,
+		// 		"CurrencyCode" 					=> (string) 'nis',
+		// 		"SourceTypeID" 					=> (string) 1,
+		// 		"ItemImageID" 					=> (string) 0
+		// 	);
+		// }
 
-		$this->emit(1, "Should insert ".count($newItems)." items ");
+		$this->emit(1, "Should insert ".count($xml->ITEMS->children())." items ");
 
-	   	for ($i=0; $i < ceil(count($newItems)/50)*50; $i+=50) {
+	   	// for ($i=0; $i < ceil(count($newItems)/50)*50; $i+=50) {
 
 	   		$payload = array(
-	   			"items"=> array_slice($newItems, $i, 50),
+	   			// "items"=> array_slice($newItems, $i, 50),
 				"ChainID" => (string)$ChainID,
 				"StoreID" => (string)$StoreId,
-				"FileName" => (string)basename($priceFullXmlFileName)
+				"FileName" => (string)realpath($priceFullXmlFileName)
 	   		);
 
 		    $insertItems = $this->httpPost(
@@ -896,12 +895,14 @@ class FoodImporter
 
 		    if($insertItems['error']) {
 		    	$shouldKeepFile = true;
-		    	$this->emit(1, $insertItems['message']."");
+		    	$this->emit(1, "ERROR with file $priceFullXmlFileName");
+		    	$this->emit(1, $insertItems['message']);
 		    }
 		    else {
-		    	$this->emit(1, "Updated ".count($payload['items'])." items of ChainID $ChainID");
+		    	$this->emit(1, "Updated ".count($insertItems['affected_rows'])." items of ChainID $ChainID");
 		    }
-	   	}
+
+	   	// }
 
 	    if(!isset($shouldKeepFile)) {
 	    	unlink($priceFullXmlFileName);
