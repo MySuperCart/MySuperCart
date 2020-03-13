@@ -148,7 +148,7 @@
         if($( "#result" ).html() == "Running query...") return;
 
         var callStack = localStorage.getItem('callStack');
-        if(callStack && callStack.length) { 
+        if(callStack && JSON.parse(callStack).length) { 
           callStack = JSON.parse(callStack); 
           importer(callStack[0].action, callStack[0].arg1, callStack[0].arg2, callStack[0].log_level);
           callStack = callStack.slice(1);
