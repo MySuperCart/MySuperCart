@@ -7,6 +7,7 @@
   <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
+      td {vertical-align: top; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages {
@@ -114,7 +115,6 @@
           "//35.180.25.13/xml-importer/import.php?action="+action+"&arg1="+arg1+"&arg2="+arg2+"&log_level="+log_level,
           function( data ) {
             $( "#result" ).html( JSON.stringify(data, undefined, 2) );
-            console.log( "Load was performed." );
           }
         );
       }
