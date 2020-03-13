@@ -899,7 +899,10 @@ class FoodImporter
 		    	$this->emit(1, $insertItems['message']);
 		    }
 		    else {
-		    	$this->emit(1, "Updated ".count($insertItems['affected_rows'])." items of ChainID $ChainID");
+		    	if($insertItems['affected_rows'] == 0) 
+		    		$shouldKeepFile = true;
+
+		    	$this->emit(1, "Updated ".$insertItems['affected_rows']." items of ChainID $ChainID");
 		    }
 
 	   	// }
