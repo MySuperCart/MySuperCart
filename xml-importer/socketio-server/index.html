@@ -14,7 +14,55 @@
     </style>
 </head>
 <body>
-  <ul id="messages"></ul>
+  <table>
+    <tr>
+      <td>
+        <ul id="messages"></ul>
+      </td>
+      <td>
+        <div>
+          <select id="action">
+            <option>Action</option>
+            <option value="download">Download XML Files</option>
+            <option value="parse">Load pending XML into Database</option>
+          </select>
+          <select id="ChainName">
+            <option>Chain Name</option>
+            <option value="kingstore">kingstore</option>
+            <option value="maayan2000">maayan2000</option>
+            <option value="victory_mahsane_hashuk">victory_mahsane_hashuk</option>
+            <option value="zolvebegadol">zolvebegadol</option>
+            <option value="ybitan">ybitan</option>
+            <option value="mega">mega</option>
+            <option value="superpharm">superpharm</option>
+            <option value="shukhayir">shukhayir</option>
+            <option value="shefabirkathashem">shefabirkathashem</option>
+            <option value="shufersal">shufersal</option>
+            <option value="ramilevi">ramilevi</option>
+            <option value="doralon">doralon</option>
+            <option value="tivtaam">tivtaam</option>
+            <option value="hazihinam">hazihinam</option>
+            <option value="yohananof">yohananof</option>
+            <option value="osherad">osherad</option>
+            <option value="superdosh">superdosh</option>
+            <option value="stopmarket">stopmarket</option>
+            <option value="freshmarket">freshmarket</option>
+            <option value="keshet">keshet</option>
+          </select>
+          <select id="FileType">
+            <option>FileType</option>
+            <option value="Price">Price</option>
+            <option value="Stores">Stores</option>
+            <option value="PriceFull">PriceFull</option>
+          </select>
+          <button onclick="buildCommand()">RUN</button>
+        </div>
+        <div>
+          <pre id="result"></pre>
+        </div>
+      </td>
+    </tr>
+  </table>
   <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
@@ -25,6 +73,28 @@
           window.scrollTo(0, document.body.scrollHeight);
         });
       });
+
+      function buildCommand() {
+        var action = $("#action").val();
+        var ChainName = $("#ChainName").val();
+        var FileType = $("#FileType").val();
+        if(action == 'download')
+          importer(action, ChainName, FileType);
+        else if(action == 'parse')
+          importer(action, FileType);
+        // TODO: action downloadALL
+        // TODO: action parseALL
+      }
+
+      function importer(action, arg1=null, arg2=null, log_level=0) {
+        $.get(
+          "//35.180.25.13/xml-importer/import.php?action="+action+"&arg1="+arg1+"&arg2="+arg2+"&log_level="+log_level,
+          function( data ) {
+            $( "#result" ).html( JSON.stringify(data) );
+            console.log( "Load was performed." );
+          }
+        );
+      }
     </script>
 </body>
 </html>

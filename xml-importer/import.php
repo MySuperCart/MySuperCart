@@ -41,48 +41,54 @@ $fi = new FoodImporter();
 // $fi->removeDuplicatesOlderFiles();
 
 if (isset($argc)) {
-	switch ($argv[1]) {
-		case 'download':
-			$fi->LOG_LEVEL = 2;
-			$chainName = $argv[2];
-			$fileType = $argv[3];
-			$fi->download($chainName, $fileType);
-			break;
-
-		case 'parse':
-			$fi->LOG_LEVEL = 2;
-			$fileType = $argv[2];
-			$fi->parseXML($fileType);
-			break;
-
-		case 'extract':
-			$fi->LOG_LEVEL = 2;
-			$fi->runGzExtractionOnFilesArray(array($argv[2]));
-
-		case 'stores':
-			$fi->LOG_LEVEL = 1;
-			$fi->syncAll('Stores');
-
-		case 'pricefull':
-			$fi->LOG_LEVEL = 1;
-			$fi->syncAll('PriceFull');
-
-		case 'price':
-			$fi->LOG_LEVEL = 1;
-			$fi->syncAll('Price');
-
-		case 'insertChain':
-			$fi->LOG_LEVEL = 2;
-			$fi->insertChain("7290027600007", "Shufersal");
-
-		case 'extractAll':
-			$fi->LOG_LEVEL = 2;
-			$fi->extractAll();
-
-		default:
-			# code...
-			break;
-	}
-
+	$action = $argv[1];
+	$arg1 = $argv[2];
+	$arg2 = $argv[3];
+	$fi->LOG_LEVEL = 0;
+} elseif (isset($_GET['action'])){
+	$action = $_GET['action'];
+	$arg1 = isset($_GET['arg1']) ? $_GET['arg1'] : '';
+	$arg2 = isset($_GET['arg2']) ? $_GET['arg2'] : '';
+	$fi->LOG_LEVEL = isset($_GET['log_level']) ? $_GET['log_level'] : 0;
 }
+
+switch ($action) {
+	case 'download':
+		$fi->download($arg1, $arg2);
+		break;
+
+	case 'parse':
+		$fi->LOG_LEVEL = 0;
+		$fi->parseXML($arg1);
+		break;
+
+	case 'extract':
+		$fi->LOG_LEVEL = 0;
+		$fi->runGzExtractionOnFilesArray(array($arg1));
+
+	case 'stores':
+		$fi->LOG_LEVEL = 0;
+		$fi->syncAll('Stores');
+
+	case 'pricefull':
+		$fi->LOG_LEVEL = 1;
+		$fi->syncAll('PriceFull');
+
+	case 'price':
+		$fi->LOG_LEVEL = 1;
+		$fi->syncAll('Price');
+
+	case 'insertChain':
+		$fi->LOG_LEVEL = 2;
+		$fi->insertChain("7290027600007", "Shufersal");
+
+	case 'extractAll':
+		$fi->LOG_LEVEL = 2;
+		$fi->extractAll();
+
+	default:
+		# code...
+		break;
+}
+
 ?>
