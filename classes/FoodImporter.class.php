@@ -204,7 +204,7 @@ class FoodImporter
 
 		foreach ($contents as $fileName) {
 			// Confirm we are not download useless files
-			if(strpos($fileName, $fileType) !== 0) continue;
+			if(strpos($fileName, $fileType."729") !== 0) continue;
 
 			// local & server file path
 			$localFilePath  = $this->DIR_DOWNLOAD . $fileName;
@@ -279,7 +279,7 @@ class FoodImporter
 		$files = scandir($this->DIR_DOWNLOAD);
 		$pendingFiles = array();
 		foreach ($files as $fileName) {
-			if(strpos($fileName, $sectionName) !== FALSE)
+			if(strpos($fileName, $sectionName."729") !== FALSE)
 				$pendingFiles[] = $this->DIR_DOWNLOAD . $fileName;
 		}
 
