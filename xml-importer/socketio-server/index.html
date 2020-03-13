@@ -7,10 +7,33 @@
   <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
-      #messages { margin-bottom: 40px }
+      #messages {
+        width: 50vw;
+        max-height: 100vh;
+        overflow: auto;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;}
+      #right {
+        width: 50vw;
+        height: 100vh;
+      }
+      #navbar{
+        height: 40px;
+      }
+      select, button {
+        height: 40px;
+        min-width: 100px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      pre#result {
+        width: 100%;
+        max-height: calc(100vh - 40px);
+        overflow: auto;
+      }
     </style>
 </head>
 <body>
@@ -19,7 +42,7 @@
       <td>
         <ul id="messages"></ul>
       </td>
-      <td>
+      <td id="right">
         <div>
           <select id="action">
             <option>Action</option>
@@ -90,7 +113,7 @@
         $.get(
           "//35.180.25.13/xml-importer/import.php?action="+action+"&arg1="+arg1+"&arg2="+arg2+"&log_level="+log_level,
           function( data ) {
-            $( "#result" ).html( JSON.stringify(data) );
+            $( "#result" ).html( JSON.stringify(data, undefined, 2) );
             console.log( "Load was performed." );
           }
         );
