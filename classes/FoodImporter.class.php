@@ -975,7 +975,7 @@ class FoodImporter
 				$this->parseXMLStores($xmlFile);
 			}
 		}
-		else if($fileType == 'PriceFull') {
+		else if($fileType == 'PriceFull' || $fileType == 'Price') {
 			foreach ($xmlFiles as $xmlFile) {
 				$this->parseXMLPriceFull($xmlFile);
 			}
