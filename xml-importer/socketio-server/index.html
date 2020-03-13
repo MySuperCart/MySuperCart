@@ -148,9 +148,13 @@
         if($( "#result" ).html() == "Running query...") return;
 
         var callStack = localStorage.getItem('callStack');
-        if(callStack && callStack.length) { callStack = JSON.parse(callStack); } else { callStack = []; }
-        importer(callStack[0].action, callStack[0].arg1, callStack[0].arg2, callStack[0].log_level);
-        callStack = callStack.slice(1);
+        if(callStack && callStack.length) { 
+          callStack = JSON.parse(callStack); 
+          importer(callStack[0].action, callStack[0].arg1, callStack[0].arg2, callStack[0].log_level);
+          callStack = callStack.slice(1);
+        } 
+        else { callStack = []; }
+
         localStorage.setItem('callStack', JSON.stringify(callStack));
       }, 1000);
     </script>
