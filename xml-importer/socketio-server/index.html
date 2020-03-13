@@ -79,6 +79,12 @@
             <option value="Stores">Stores</option>
             <option value="PriceFull">PriceFull</option>
           </select>
+          <select id="LogLevel">
+            <option>LogLevel</option>
+            <option value="0">Everything</option>
+            <option value="1">Important</option>
+            <option value="2">Strict</option>
+          </select>
           <button onclick="buildCommand()">RUN</button>
         </div>
         <div>
@@ -102,10 +108,11 @@
         var action = $("#action").val();
         var ChainName = $("#ChainName").val();
         var FileType = $("#FileType").val();
+        var LogLevel = $("#LogLevel").val();
         if(action == 'download')
-          importer(action, ChainName, FileType);
+          importer(action, ChainName, FileType, LogLevel);
         else if(action == 'parse')
-          importer(action, FileType);
+          importer(action, FileType, null, LogLevel);
         // TODO: action downloadALL
         // TODO: action parseALL
       }
