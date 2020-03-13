@@ -54,7 +54,9 @@
 		Quantity = ExtractValue(@item, 'QUANTITY'), 
 		UnitOfMeasure = ExtractValue(@item, 'UNITOFMEASURE');";
 
-		$stmt = $mysqli->query($sqlLoadFile);
+		if($mysqli->query($sqlLoadFile) === FALSE){
+			throw new Exception($mysqli->error);
+		}
 
 		// for ($i=0; $i < count($newItems); $i++) { 
 		// 	$item = $newItems[$i];
@@ -99,6 +101,7 @@
 		// 	);
 		// 	$stmt->execute() or die($mysqli->error);
 		// }
+
 
 
 		// FINISHING
