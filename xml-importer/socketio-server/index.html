@@ -49,6 +49,7 @@
             <option>Action</option>
             <option value="download">Download XML Files</option>
             <option value="parse">Load pending XML into Database</option>
+            <option value="syncAll">Download and load all chains</option>
           </select>
           <select id="ChainName">
             <option>Chain Name</option>
@@ -109,12 +110,28 @@
         var ChainName = $("#ChainName").val();
         var FileType = $("#FileType").val();
         var LogLevel = $("#LogLevel").val();
-        if(action == 'download')
-          importer(action, ChainName, FileType, LogLevel);
-        else if(action == 'parse')
-          importer(action, FileType, null, LogLevel);
-        // TODO: action downloadALL
-        // TODO: action parseALL
+        if(action == 'download'){
+          pushToCallStack({"action": "download", "arg1": ChainName, "arg2": FileType, "log_level": LogLevel });
+        }
+        else if(action == 'parse'){
+          pushToCallStack({"action": "parse", "arg1": FileType, "arg2": null, "log_level": LogLevel });
+        }
+        else if(action == 'syncAll')
+        {
+          var chains = ['kingstore', 'maayan2000', 'victory_mahsane_hashuk', 'zolvebegadol', 'ybitan', 'mega', 'superpharm', 'shukhayir', 'shefabirkathashem', 'shufersal', 'ramilevi', 'doralon', 'tivtaam', 'hazihinam', 'yohananof', 'osherad', 'superdosh', 'stopmarket', 'freshmarket', 'keshet' ];
+          var stack = [];
+          for(var i = 0; i<chains.length; i++){
+            pushToCallStack({"action": "download", "arg1": chains[i], "arg2": FileType, "log_level": LogLevel });
+            pushToCallStack({"action": "parse", "arg2": null, "arg1": FileType, "log_level": LogLevel });
+          }
+        }
+      }
+
+      function pushToCallStack(command) {
+        var callStack = localStorage.getItem('callStack');
+          if(callStack) { callStack = JSON.parse(callStack); } else { callStack = []; }
+          callStack.push(command);
+          localStorage.setItem('callStack', JSON.stringify(callStack));
       }
 
       function importer(action, arg1=null, arg2=null, log_level=0) {
@@ -126,6 +143,16 @@
           }
         );
       }
+
+      setInterval(function(){
+        if($( "#result" ).html() == "Running query...") return;
+
+        var callStack = localStorage.getItem('callStack');
+        if(callStack) { callStack = JSON.parse(callStack); } else { callStack = []; }
+        importer(callStack[0].action, callStack[0].arg1, callStack[0].arg2, callStack[0].log_level);
+        callStack = callStack.slice(1);
+        localStorage.setItem('callStack', JSON.stringify(callStack));
+      }, 1000);
     </script>
 </body>
 </html>
