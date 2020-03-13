@@ -956,19 +956,19 @@ class FoodImporter
 		}
 	}
 	function parseXML($fileType) {
-		// $this->removeDuplicatesOlderFiles();
-		// $xmlFiles = $this->pendingFiles($fileType);
-		$xmlFiles = array();
+		$this->removeDuplicatesOlderFiles();
+		$xmlFiles = $this->pendingFiles($fileType);
+		// $xmlFiles = array();
 
-		$jeruSnifs = array(
-		"7290027600007-",
-		"7290492000005-",
-		"7290803800003-",
-		"7290172900007-",
-		"7290661400001-");
-		foreach ($jeruSnifs as $snif) {
-			$xmlFiles = array_merge($xmlFiles, $this->pendingFiles($snif));
-		}
+		// $jeruSnifs = array(
+		// "7290027600007-",
+		// "7290492000005-",
+		// "7290803800003-",
+		// "7290172900007-",
+		// "7290661400001-");
+		// foreach ($jeruSnifs as $snif) {
+		// 	$xmlFiles = array_merge($xmlFiles, $this->pendingFiles($snif));
+		// }
 
 		if($fileType == 'Stores') {
 			foreach ($xmlFiles as $xmlFile) {
