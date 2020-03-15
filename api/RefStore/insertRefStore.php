@@ -29,14 +29,13 @@
 			$store['AddressID'] = $stmt->insert_id;
 
 			// STEP 2: Insert RefStore
-			$stmt = $mysqli->prepare("INSERT IGNORE INTO `FoodTech`.`RefStore` (`StoreID`, `ChainID`, `StoreName`, `StoreAddressID`, `StorePhoneID`) VALUES (?, ?, ?, ?, ?)");
+			$stmt = $mysqli->prepare("INSERT IGNORE INTO `FoodTech`.`RefStore` (`StoreID`, `ChainID`, `StoreName`, `StoreAddressID`) VALUES (?, ?, ?, ?)");
 
-			$stmt->bind_param('iisii',
+			$stmt->bind_param('iisi',
 				$store['StoreID'],
 				$store['ChainID'],
 				$store['StoreName'],
-				$store['AddressID'],
-				$store['StorePhoneID']
+				$store['AddressID']
 			);
 			$stmt->execute() or die($mysqli->error);
 

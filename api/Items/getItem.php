@@ -9,25 +9,25 @@
 			throw new Exception("no_fields_sent");
 
 		// Missing required field
-		$_PHP_INPUT['barcode'] = isset($_PHP_INPUT['barcode'])	? intval($_PHP_INPUT['barcode']) 		: '0';
-
-		// Try finding lowest and biggest prices
-		try {
-        	// Find Min Price
-        	$minPrice = $mysqli->query("SELECT `ItemPrice` as `minPrice` FROM `FoodTech`.`Items` WHERE `ItemCode` = '".$_PHP_INPUT['barcode']."' ORDER BY `ItemPrice` ASC LIMIT 1")->fetch_object()->minPrice;
-
-        	// Find Max Price
-        	$maxPrice = $mysqli->query("SELECT `ItemPrice` as `maxPrice` FROM `FoodTech`.`Items` WHERE `ItemCode` = '".$_PHP_INPUT['barcode']."' ORDER BY `ItemPrice` DESC LIMIT 1")->fetch_object()->maxPrice;
-
-        } catch(Exception $e) {}
+		$_PHP_INPUT['barcode'] 	= isset($_PHP_INPUT['barcode'])	? intval($_PHP_INPUT['barcode']) : '0';
+		$_PHP_INPUT['city'] 	= isset($_PHP_INPUT['city']) 	? strval($_PHP_INPUT['city'])	 : 'ירושלים';
 
 		// STEP 1: Select Items details
-		$itemQuery = "SELECT * FROM `FoodTech`.`Items` WHERE ItemCode = ? LIMIT 1";
+		$itemQuery = "SELECT `i`.`itemid`, `i`.`priceupdatedate`, `i`.`itemname`,`i`.`itemprice`, `c`.`chainname`, `s`.`storename`, `a`.`city`
+			FROM `items` as `i`
+			inner join `refstore` as `s` on `i`.`refstoreid` = `s`.`refstoreid`
+			inner join `address` as `a` on `s`.`StoreAddressID` = `a`.`addressid`
+			inner join `refchain` as `c` on `c`.`chainid` = `s`.`chainid`
+			WHERE `ItemCode` = ?
+			AND `city` = ?
+			ORDER BY `itemprice` ASC
+			LIMIT 50";
 
 		// Binding params
 		$stmt = $mysqli->prepare($itemQuery);
-		$stmt->bind_param('s',
-			$_PHP_INPUT['barcode']
+		$stmt->bind_param('ss',
+			$_PHP_INPUT['barcode'],
+			$_PHP_INPUT['city']
 		);
 
 		$stmt->execute() or die($mysqli->error);

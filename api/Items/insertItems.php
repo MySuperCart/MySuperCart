@@ -5,7 +5,7 @@
 	
 	try {
 
-		requireFields(['StoreID', 'ChainID', 'FileName']);
+		requireFields(['StoreID', 'ChainID', 'FileName', 'ItemNameFieldName', 'ItemFieldName']);
 
 		// $newItems = $_PHP_INPUT['items'];
 		$StoreID = $_PHP_INPUT['StoreID'];
@@ -15,6 +15,8 @@
 		if(strpos($FilePath, "./temp_downloads/") === 0) {
 			$FileName = realpath("/var/www/html/xml-importer/".substr($FileName, 2));
 		}
+		$ItemNameFieldName = $_PHP_INPUT['ItemNameFieldName'];
+		$ItemFieldName = $_PHP_INPUT['ItemFieldName'];
 
 		// Insert ETLLoad
 		$stmt = $mysqli->prepare("INSERT INTO 
@@ -31,22 +33,38 @@
 		$ETLLoadID = $stmt->insert_id;
 
 		// Find RefStoreID
-		$RefStoreID = $mysqli->query("SELECT `ID` 
+		$RefStoreID = $mysqli->query("SELECT `RefStoreID` 
 			FROM `FoodTech`.`RefStore` 
 			WHERE `ChainID`='$ChainID' AND `StoreID`='$StoreID' 
-			LIMIT 1")->fetch_object()->ID;
+			LIMIT 1")->fetch_object()->RefStoreID;
+
+		if(!$RefStoreID) {
+			// Insert RefStore
+			$stmt = $mysqli->prepare("INSERT INTO 
+				`FoodTech`.`RefStore` 
+				(`ChainID`, `StoreID`) 
+				VALUES (?, ?)");
+
+			$stmt->bind_param('ii',
+				$ChainID,
+				$StoreID
+			);
+			$stmt->execute() or die($mysqli->error);
+			$RefStoreID = $stmt->insert_id;
+		}
 
 		// Insert Items
 		$sqlLoadFile = "LOAD DATA LOCAL INFILE '$FilePath'
 	    INTO TABLE Items
 		CHARACTER SET binary
-		LINES STARTING BY '<ITEM>' TERMINATED BY '</ITEM>'
+		LINES STARTING BY '<".$ItemFieldName.">' TERMINATED BY '</".$ItemFieldName.">'
 		(@item)
 		SET
+		RefStoreID = '".$RefStoreID."',
 		PriceUpdateDate = ExtractValue(@item, 'PRICEUPDATEDATE'),
 		ItemCode = ExtractValue(@item, 'ITEMCODE'), 
 		ItemPrice = ExtractValue(@item, 'ITEMPRICE'), 
-		ItemName = IFNULL(ExtractValue(@item, 'ITEMNAME'), ExtractValue(@item, 'ITEMNM')), 
+		ItemName = ExtractValue(@item, '".$ItemNameFieldName."'), 
 		ManufacturerName = ExtractValue(@item, 'MANUFACTURERNAME'), 
 		ManufactureCountry = ExtractValue(@item, 'MANUFACTURECOUNTRY'), 
 		ManufacturerItemDescription = ExtractValue(@item, 'MANUFACTURERITEMDESCRIPTION'), 
@@ -57,52 +75,6 @@
 		if($mysqli->query($sqlLoadFile) === FALSE){
 			throw new Exception($mysqli->error);
 		}
-
-		// for ($i=0; $i < count($newItems); $i++) { 
-		// 	$item = $newItems[$i];
-
-		// 	// STEP 2: Insert Address
-
-		// 	$stmt = $mysqli->prepare("INSERT INTO 
-		// 		`FoodTech`.`Items` 
-		// 		(`ItemCode`, 
-		// 		`PriceUpdateDate`, 
-		// 		`ItemPrice`, 
-		// 		`ItemName`, 
-		// 		`CurrencyCode`, 
-		// 		`SourceTypeID`, 
-		// 		`ETLLoadID`, 
-		// 		`RefStoreID`, 
-		// 		`ItemImageID`, 
-		// 		`ManufacturerName`, 
-		// 		`ManufactureCountry`, 
-		// 		`ManufacturerItemDescription`, 
-		// 		`UnitQty`, 
-		// 		`Quantity`, 
-		// 		`UnitOfMeasure`) 
-  //               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?)");
-
-		// 	$stmt->bind_param('sssssiiiissssss',
-		// 		$item['ItemCode'], 
-  //               $item['PriceUpdateDate'],
-  //               $item['ItemPrice'],
-  //               $item['ItemName'],
-  //               $item['CurrencyCode'],
-  //               $item['SourceTypeID'],
-  //               $ETLLoadID,
-  //               $RefStoreID,
-  //               $item['ItemImageID'],
-  //               $item['ManufacturerName'],
-  //               $item['ManufactureCountry'],
-  //               $item['ManufacturerItemDescription'],
-  //               $item['UnitQty'],
-  //               $item['Quantity'],
-  //               $item['UnitOfMeasure']
-		// 	);
-		// 	$stmt->execute() or die($mysqli->error);
-		// }
-
-
 
 		// FINISHING
 		echo json_encode(array(

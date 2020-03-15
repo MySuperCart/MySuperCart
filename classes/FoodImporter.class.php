@@ -4,9 +4,10 @@
 */
 class FoodImporter
 {
-	private $API_DOMAIN = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com/api";
-	private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
-	// private $SOCKET_API = "http://localhost:9001/news";
+	// private $API_DOMAIN = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com/api";
+	private $API_DOMAIN = "http://techfood.local/api";
+	// private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
+	private $SOCKET_API = "http://techfood.local:9001/news";
 
 	// Initialize a file URL to the variable
 	private $URLS = array(
@@ -16,6 +17,7 @@ class FoodImporter
 			'Stores' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'Price' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=2",
+			'Promo' => "https://www.kingstore.co.il/Food_Law/MainIO_Hok.aspx?WStore=0&WFileType=3",
 			'download' => "https://www.kingstore.co.il/Food_Law/Download/",
 			'shouldAppendDateFormatToPage' => "m/d/Y"
 		),
@@ -25,6 +27,7 @@ class FoodImporter
 			'Stores' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'Price' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
+			'Promo' => "http://maayan2000.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=3",
 			'download' => "http://maayan2000.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -41,6 +44,7 @@ class FoodImporter
 			'Stores' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'Price' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
+			'Promo' => "http://zolvebegadol.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=3",
 			'download' => "http://zolvebegadol.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -64,8 +68,10 @@ class FoodImporter
 			'Stores' => "http://prices.super-pharm.co.il/?type=StoresFull&store=&date=",
 			'PriceFull' => "http://prices.super-pharm.co.il/?type=PriceFull&store=&date=",
 			'Price' => "http://prices.super-pharm.co.il/?type=Price&store=&date=",
+			'Promo' => "http://prices.super-pharm.co.il/?type=Promo&store=&date=",
 			'shouldAppendDateFormatToCustom' => "Y-m-d",
 			'shouldPrependPageFieldForDownload' => true
+			// TODO: handle pagination
 		),
 		// 'superbareket' => array(
 		// 	'page' => "http://prices.super-bareket.co.il/"
@@ -76,6 +82,7 @@ class FoodImporter
 			'Stores' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'Price' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
+			'Promo' => "http://shuk-hayir.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=3",
 			'download' => "http://shuk-hayir.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -85,6 +92,7 @@ class FoodImporter
 			'Stores' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=1",
 			'PriceFull' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=4",
 			'Price' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=2",
+			'Promo' => "http://shefabirkathashem.binaprojects.com/MainIO_Hok.aspx?WStore=0&WFileType=3",
 			'download' => "http://shefabirkathashem.binaprojects.com/Download/",
 			'shouldAppendDateFormatToPage' => "d/m/Y"
 		),
@@ -92,7 +100,8 @@ class FoodImporter
 			'html' => true,
 			'Stores' => 'http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=5&storeId=0',
 			'PriceFull' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=2&storeId=0&asort=Time&sortdir=DESC&sort=Time",
-			'Price' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=1&storeId=0&asort=Time&sortdir=DESC&sort=Time"
+			'Price' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=1&storeId=0&asort=Time&sortdir=DESC&sort=Time",
+			'Promo' => "http://prices.shufersal.co.il/FileObject/UpdateCategory?catID=3&storeId=0&asort=Time&sortdir=DESC&sort=Time"
 		),
 		'ramilevi' => array(
 			'ftp_host' => 'url.retail.publishedprices.co.il',
@@ -204,7 +213,7 @@ class FoodImporter
 
 		foreach ($contents as $fileName) {
 			// Confirm we are not download useless files
-			if(strpos($fileName, $fileType."729") !== 0) continue;
+			if(strpos($fileName, $fileType) !== 0) continue;
 
 			// local & server file path
 			$localFilePath  = $this->DIR_DOWNLOAD . $fileName;
@@ -279,7 +288,7 @@ class FoodImporter
 		$files = scandir($this->DIR_DOWNLOAD);
 		$pendingFiles = array();
 		foreach ($files as $fileName) {
-			if(strpos($fileName, $sectionName."729") !== FALSE)
+			if(strpos($fileName, $sectionName) !== FALSE)
 				$pendingFiles[] = $this->DIR_DOWNLOAD . $fileName;
 		}
 
@@ -336,7 +345,7 @@ class FoodImporter
 			{
 				// If we filtered urls by file type, we assert the file type keyword (like "Promo")
 				// is indeed in the file name
-				if($isSuperPharmLink || !$fileType || ($fileType && strpos($url, $fileType.'729') !== FALSE)) {
+				if($isSuperPharmLink || !$fileType || ($fileType && strpos($url, $fileType) !== FALSE)) {
 
 					$url = trim($url);
 
@@ -386,15 +395,20 @@ class FoodImporter
 		$extractedFileNames = array();
 
 		foreach ($arr as $fileName) {
-			if(substr($fileName, -3) === 'xml') continue;
+			if(substr($fileName, -3) === 'xml') {
+				$this->cleanXmlFile($fileName);
+				$this->XmlBeautify($fileName);
+				$extractedFileNames[] = $fileName;
+			}
+			else {
+				$xmlFileName = $this->uncompressIfNeeded($fileName);
 
-			$xmlFileName = $this->uncompressIfNeeded($fileName);
-			$extractedFileNames[] = $xmlFileName;
-
-			// Beautify the final XML file
-			// Warning: this can cause a heavier load of file_get_contents
-			$this->cleanXmlFile($xmlFileName);
-			$this->XmlBeautify($xmlFileName);
+				// Beautify the final XML file
+				// Warning: this can cause a heavier load of file_get_contents
+				$this->cleanXmlFile($xmlFileName);
+				$this->XmlBeautify($xmlFileName);
+				$extractedFileNames[] = $xmlFileName;
+			}
 		}
 
 		$this->emit(1, count($extractedFileNames)." files are ready for parsing.");
@@ -682,7 +696,7 @@ class FoodImporter
 		}
 	}
 
-
+	// TODO: Check if $returnUrls contains really the most recent files only 
 	function filterUniqueUrlsInArray($arr) {
 		$this->emit(0, "filterUniqueUrlsInArray with ".count($arr)." URLs");
 
@@ -693,9 +707,14 @@ class FoodImporter
 			$fileDate = $matches[2][0];
 			$fileExt = $matches[3][0];
 
+			// if the fileName has another pattern
+			if(!$fileKey && !$fileDate && !$fileExt){
+				$uniqueFiles[$fileName] = array('fileName' => $fileName);
+				continue;
+			}
+
 			// index the fileKey
 			if(!isset($uniqueFiles[$fileKey])) {
-				$this->emit(0, "indexing $fileKey ");
 				$uniqueFiles[$fileKey] = array('fileDate' => $fileDate, 'fileName' => $fileName);
 			}
 			// compare
@@ -749,6 +768,7 @@ class FoodImporter
 	    elseif ($first4 == $UTF32_LITTLE_ENDIAN_BOM) return 'UTF-32LE';
 	    elseif ($first2 == $UTF16_BIG_ENDIAN_BOM) return 'UTF-16BE';
 	    elseif ($first2 == $UTF16_LITTLE_ENDIAN_BOM) return 'UTF-16LE';
+	    elseif (strpos($text, 'ISO-8859-8') !== false) return 'ISO-8859-8';
 	}
 
 	function file_get_contents_utf8($fn) {
@@ -766,6 +786,10 @@ class FoodImporter
 				return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
 				break;
 
+			case 'ISO-8859-8':
+				return mb_convert_encoding($content, 'UTF-8', 'ISO-8859-8');
+				break;
+
 			// case 'UTF-16BE':
 			// 	return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
 			// 	break;
@@ -778,6 +802,7 @@ class FoodImporter
 			// 	break;
 
 			default:
+				// return $content;
 				return $content;
 				break;
 		}
@@ -798,7 +823,14 @@ class FoodImporter
 	    $this->insertChain(strval($ChainID), strval($ChainName));
 
 	    $Stores = $xml->xpath('//STOREID')[0];
-	    $Stores = $Stores->xpath("..")[0]->xpath("..")[0];
+
+	    try {
+	    	$Stores = $Stores->xpath("..")[0]->xpath("..")[0];
+	    } catch (Exception $e) {
+			$this->emit(1, "ERROR with: $storeXmlFileName");
+			$this->emit(1, $e->getMessage());
+	    }
+
 
 	    $newStores = array();
 
@@ -809,8 +841,7 @@ class FoodImporter
 				"ZipCode"		=> (string)$Store->ZIPCODE,
 				"StoreID"		=> (string)$Store->STOREID,
 				"StoreName"		=> (string)$Store->STORENAME,
-				"ChainID"		=> (string)$ChainID,
-				"StorePhoneID"	=> 0
+				"ChainID"		=> (string)$ChainID
 			);
 	    }
 
@@ -850,62 +881,58 @@ class FoodImporter
 		$xml = $this->xmlStringToArray($XMLfileContent);
 
 		// Preparing data for ETLLoad
-	    $ChainID 	= 	$xml->CHAINID;
-		$SubChainId = 	$xml->SUBCHAINID;
-		$StoreId 	= 	$xml->STOREID;
+	    $ChainID 	= 	$xml->xpath('//CHAINID')[0];
+		$SubChainId = 	$xml->xpath('//SUBCHAINID')[0];
+		$StoreId 	= 	$xml->xpath('//STOREID')[0];
 
-	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
+		// Insert the RefChain is case it's missing
+	    $this->insertChain(strval($ChainID), "");
 
-		// Preparing data for Items
-		// $newItems = array();
-		// foreach($xml->ITEMS->children() as $Item) {
+		// ItemNameFieldName
+		if( $xml->xpath('//ITEMNAME') ) {
+			$ItemNameFieldName = "ITEMNAME";
+		} 
+		else if( $xml->xpath('//ITEMNM') ) {
+			$ItemNameFieldName = "ITEMNM";
+		} else {
+			$this->emit(1, "ERROR with: $priceFullXmlFileName");
+			die();
+		}
 
-		// 	$newItems[] = array(
-		// 		"PriceUpdateDate" 				=> (string) $Item->PRICEUPDATEDATE,
-		// 		"ItemCode" 						=> (string) $Item->ITEMCODE,
-		// 		"ItemPrice" 					=> (string) $Item->ITEMPRICE,
-		// 		"ItemName" 						=> (string) $Item->ITEMNAME,
-		// 		"ManufacturerName" 				=> (string) $Item->MANUFACTURERNAME,
-		// 		"ManufactureCountry" 			=> (string) $Item->MANUFACTURECOUNTRY,
-		// 		"ManufacturerItemDescription" 	=> (string) $Item->MANUFACTURERITEMDESCRIPTION,
-		// 		"UnitQty" 						=> (string) $Item->UNITQTY,
-		// 		"Quantity" 						=> (string) $Item->QUANTITY,
-		// 		"UnitOfMeasure" 				=> (string) $Item->UNITOFMEASURE,
-		// 		"CurrencyCode" 					=> (string) 'nis',
-		// 		"SourceTypeID" 					=> (string) 1,
-		// 		"ItemImageID" 					=> (string) 0
-		// 	);
-		// }
+		// ItemFieldName
+	    try {
+	    	$ItemFieldName = $xml->xpath('//ITEMCODE')[0]->xpath("..")[0]->getName();
+	    } catch(Exception $e) {
+			$this->emit(1, "ERROR: Cannot find the ITEMS XML node name with: $priceFullXmlFileName");
+			die();
+		}
 
-		$this->emit(1, "Should insert ".count($xml->ITEMS->children())." items ");
+	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId / ItemFieldName $ItemFieldName / ItemNameFieldName $ItemNameFieldName");
 
-	   	// for ($i=0; $i < ceil(count($newItems)/50)*50; $i+=50) {
+   		$payload = array(
+			"ChainID" => (string)$ChainID,
+			"StoreID" => (string)$StoreId,
+			"FileName" => (string)realpath($priceFullXmlFileName),
+			"ItemNameFieldName" => (string)$ItemNameFieldName,
+			"ItemFieldName" => (string)$ItemFieldName
+   		);
 
-	   		$payload = array(
-	   			// "items"=> array_slice($newItems, $i, 50),
-				"ChainID" => (string)$ChainID,
-				"StoreID" => (string)$StoreId,
-				"FileName" => (string)realpath($priceFullXmlFileName)
-	   		);
+	    $insertItems = $this->httpPost(
+	    	"/Items/insertItems.php",
+	    	$payload
+	    );
 
-		    $insertItems = $this->httpPost(
-		    	"/Items/insertItems.php",
-		    	$payload
-		    );
+	    if($insertItems['error']) {
+	    	$shouldKeepFile = true;
+	    	$this->emit(1, "ERROR with file $priceFullXmlFileName");
+	    	$this->emit(1, $insertItems['message']);
+	    }
+	    else {
+	    	if($insertItems['affected_rows'] == 0) 
+	    		$shouldKeepFile = true;
 
-		    if($insertItems['error']) {
-		    	$shouldKeepFile = true;
-		    	$this->emit(1, "ERROR with file $priceFullXmlFileName");
-		    	$this->emit(1, $insertItems['message']);
-		    }
-		    else {
-		    	if($insertItems['affected_rows'] == 0) 
-		    		$shouldKeepFile = true;
-
-		    	$this->emit(1, "Updated ".$insertItems['affected_rows']." items of ChainID $ChainID");
-		    }
-
-	   	// }
+	    	$this->emit(1, "Updated ".$insertItems['affected_rows']." items of ChainID $ChainID");
+	    }
 
 	    if(!isset($shouldKeepFile)) {
 	    	unlink($priceFullXmlFileName);
@@ -913,6 +940,76 @@ class FoodImporter
 
 	    return;
 	}
+
+
+	function parseXMLPromo($promoXmlFileName) {
+
+		$this->emit(0, "parseXMLPriceFull $promoXmlFileName ");
+
+		$XMLfileContent = file_get_contents($promoXmlFileName);
+		$xml = $this->xmlStringToArray($XMLfileContent);
+
+		// Preparing data for ETLLoad
+	    $ChainID 	= 	$xml->CHAINID;
+		$SubChainId = 	$xml->SUBCHAINID;
+		$StoreId 	= 	$xml->STOREID;
+
+		// Insert the RefChain is case it's missing
+	    $this->insertChain(strval($ChainID), "");
+
+		// ItemNameFieldName
+		if( $xml->xpath('//ITEMNAME') ) {
+			$ItemNameFieldName = "ITEMNAME";
+		} 
+		else if( $xml->xpath('//ITEMNM') ) {
+			$ItemNameFieldName = "ITEMNM";
+		} else {
+			$this->emit(1, "ERROR with: $promoXmlFileName");
+			die();
+		}
+
+		// ItemFieldName
+	    try {
+	    	$ItemFieldName = $xml->xpath('//ITEMCODE')[0]->xpath("..")[0]->getName();
+	    } catch(Exception $e) {
+			$this->emit(1, "ERROR: Cannot find the ITEMS XML node name with: $promoXmlFileName");
+			die();
+		}
+
+	    $this->emit(0, "ChainID $ChainID / SubChainId $SubChainId / StoreID $StoreId");
+
+   		$payload = array(
+			"ChainID" => (string)$ChainID,
+			"StoreID" => (string)$StoreId,
+			"FileName" => (string)realpath($promoXmlFileName),
+			"ItemNameFieldName" => (string)$ItemNameFieldName,
+			"ItemFieldName" => (string)$ItemFieldName
+   		);
+
+	    $insertItems = $this->httpPost(
+	    	"/Items/insertItems.php",
+	    	$payload
+	    );
+
+	    if($insertItems['error']) {
+	    	$shouldKeepFile = true;
+	    	$this->emit(1, "ERROR with file $promoXmlFileName");
+	    	$this->emit(1, $insertItems['message']);
+	    }
+	    else {
+	    	if($insertItems['affected_rows'] == 0) 
+	    		$shouldKeepFile = true;
+
+	    	$this->emit(1, "Updated ".$insertItems['affected_rows']." items of ChainID $ChainID");
+	    }
+
+	    if(!isset($shouldKeepFile)) {
+	    	unlink($promoXmlFileName);
+	    }
+
+	    return;
+	}
+
 	function download($chainName, $fileType) {
 		$this->emit(1, "Download $chainName - $fileType");
 		// Download from Cerberus FTP of the Chain
@@ -962,17 +1059,6 @@ class FoodImporter
 	function parseXML($fileType) {
 		$this->removeDuplicatesOlderFiles();
 		$xmlFiles = $this->pendingFiles($fileType);
-		// $xmlFiles = array();
-
-		// $jeruSnifs = array(
-		// "7290027600007-",
-		// "7290492000005-",
-		// "7290803800003-",
-		// "7290172900007-",
-		// "7290661400001-");
-		// foreach ($jeruSnifs as $snif) {
-		// 	$xmlFiles = array_merge($xmlFiles, $this->pendingFiles($snif));
-		// }
 
 		if($fileType == 'Stores') {
 			foreach ($xmlFiles as $xmlFile) {
@@ -982,6 +1068,11 @@ class FoodImporter
 		else if($fileType == 'PriceFull' || $fileType == 'Price') {
 			foreach ($xmlFiles as $xmlFile) {
 				$this->parseXMLPriceFull($xmlFile);
+			}
+		}
+		else if($fileType == 'PromoFull' || $fileType == 'Price') {
+			foreach ($xmlFiles as $xmlFile) {
+				$this->parseXMLPromo($xmlFile);
 			}
 		}
 	}
