@@ -5,9 +5,9 @@
 class FoodImporter
 {
 	// private $API_DOMAIN = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com/api";
-	private $API_DOMAIN = "http://techfood.local/api";
+	private $API_DOMAIN = "http://35.180.64.71/api";
 	// private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
-	private $SOCKET_API = "http://techfood.local:9001/news";
+	private $SOCKET_API = "http://35.180.64.71:9001/news";
 
 	// Initialize a file URL to the variable
 	private $URLS = array(
