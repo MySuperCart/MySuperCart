@@ -768,7 +768,7 @@ class FoodImporter
 	    elseif ($first4 == $UTF32_LITTLE_ENDIAN_BOM) return 'UTF-32LE';
 	    elseif ($first2 == $UTF16_BIG_ENDIAN_BOM) return 'UTF-16BE';
 	    elseif ($first2 == $UTF16_LITTLE_ENDIAN_BOM) return 'UTF-16LE';
-	    elseif (strpos($text, 'ISO-8859-8') !== false) return 'ISO-8859-8';
+	    // elseif (strpos($text, 'ISO-8859-8') !== false) return 'ISO-8859-8';
 	}
 
 	function file_get_contents_utf8($fn) {
@@ -786,9 +786,9 @@ class FoodImporter
 				return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
 				break;
 
-			case 'ISO-8859-8':
-				return mb_convert_encoding($content, 'UTF-8', 'ISO-8859-8');
-				break;
+			// case 'ISO-8859-8':
+			// 	return mb_convert_encoding($content, 'UTF-8', 'ISO-8859-8');
+			// 	break;
 
 			// case 'UTF-16BE':
 			// 	return preg_replace("/^pack('H*','EFBBBF')/", '', iconv( 'UTF-16', 'UTF-8', $content));
