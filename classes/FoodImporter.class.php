@@ -9,6 +9,11 @@ class FoodImporter
 	// private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
 	private $SOCKET_API = "http://35.180.64.71:9001/news";
 
+	private $DIR_DOWNLOAD = "./temp_downloads/";
+	private $COOKIES;
+	public $LOG_LEVEL;
+	private $MAX_PENDING_FILES_QUEUING = 5;
+
 	// Initialize a file URL to the variable
 	private $URLS = array(
 		'kingstore' => array(
@@ -150,10 +155,6 @@ class FoodImporter
 		)
 	);
 
-	private $DIR_DOWNLOAD = "./temp_downloads/";
-	private $COOKIES;
-	public $LOG_LEVEL;
-
 	function __construct() {}
 
 	function emit($importance, $msg) {
@@ -293,7 +294,7 @@ class FoodImporter
 		}
 
 		$this->emit(0, "Found ".count($pendingFiles)." files ");
-		return $pendingFiles;
+		return array_slice($pendingFiles, 0, $this->MAX_PENDING_FILES_QUEUING);
 	}
 
 
