@@ -14,10 +14,10 @@
 
 		// STEP 1: Select Items details
 		$itemQuery = "SELECT `i`.`itemid`, `i`.`priceupdatedate`, `i`.`itemname`,`i`.`itemprice`, `c`.`chainname`, `s`.`storename`, `a`.`city`
-			FROM `items` as `i`
-			inner join `refstore` as `s` on `i`.`refstoreid` = `s`.`refstoreid`
-			inner join `address` as `a` on `s`.`StoreAddressID` = `a`.`addressid`
-			inner join `refchain` as `c` on `c`.`chainid` = `s`.`chainid`
+			FROM `Items` as `i`
+			inner join `RefStore` as `s` on `i`.`RefStoreID` = `s`.`refstoreid`
+			inner join `Address` as `a` on `s`.`StoreAddressID` = `a`.`addressid`
+			inner join `RefChain` as `c` on `c`.`chainid` = `s`.`chainid`
 			WHERE `ItemCode` = ?
 			AND `city` = ?
 			ORDER BY `itemprice` ASC
@@ -37,8 +37,6 @@
 
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
-	        $row['minPrice'] = $minPrice;
-	        $row['maxPrice'] = $maxPrice;
         	$items[] = $row;
         }
 
