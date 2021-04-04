@@ -4,11 +4,7 @@
 */
 class FoodImporter
 {
-	// private $API_DOMAIN = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com/api";
-	private $API_DOMAIN = "http://35.180.64.71/api";
-	// private $SOCKET_API = "http://ec2-35-180-25-13.eu-west-3.compute.amazonaws.com:9001/news";
-	private $SOCKET_API = "http://35.180.64.71:9001/news";
-
+	private $API_DOMAIN = "http://localhost:8686/api";
 	private $DIR_DOWNLOAD = "./temp_downloads/";
 	private $COOKIES;
 	public $LOG_LEVEL;
@@ -158,8 +154,8 @@ class FoodImporter
 	function __construct() {}
 
 	function emit($importance, $msg) {
-		if($this->LOG_LEVEL <= $importance)
-			$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
+		// if($this->LOG_LEVEL <= $importance)
+		// 	$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
 	}
 
 	private function importHtmlPublicPage($chainName, $fileType) {

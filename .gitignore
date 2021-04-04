@@ -1,3 +1,4 @@
 .DS_store
-*.pem
+temp_downloads/*
 api/inc.mysqli.php
+xml-importer/.DS_store

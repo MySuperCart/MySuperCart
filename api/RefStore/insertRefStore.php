@@ -15,7 +15,7 @@
 			// STEP 2: Insert Address
 
 			$stmt = $mysqli->prepare("INSERT INTO 
-				`FoodTech`.`Address` 
+				`Address` 
 				(`Street1`, `City`, `ZipCode`) 
 				VALUES (?, ?, ?)");
 
@@ -29,7 +29,7 @@
 			$store['AddressID'] = $stmt->insert_id;
 
 			// STEP 2: Insert RefStore
-			$stmt = $mysqli->prepare("INSERT IGNORE INTO `FoodTech`.`RefStore` (`StoreID`, `ChainID`, `StoreName`, `StoreAddressID`) VALUES (?, ?, ?, ?)");
+			$stmt = $mysqli->prepare("INSERT IGNORE INTO `RefStore` (`StoreID`, `ChainID`, `StoreName`, `StoreAddressID`) VALUES (?, ?, ?, ?)");
 
 			$stmt->bind_param('iisi',
 				$store['StoreID'],

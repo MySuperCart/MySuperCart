@@ -20,7 +20,7 @@
 
 		// Insert ETLLoad
 		$stmt = $mysqli->prepare("INSERT INTO 
-			`FoodTech`.`ETLLoad` 
+			`ETLLoad` 
 			(`ChainID`, `FileName`) 
 			VALUES (?, ?)");
 
@@ -34,14 +34,14 @@
 
 		// Find RefStoreID
 		$RefStoreID = $mysqli->query("SELECT `RefStoreID` 
-			FROM `FoodTech`.`RefStore` 
+			FROM `RefStore` 
 			WHERE `ChainID`='$ChainID' AND `StoreID`='$StoreID' 
 			LIMIT 1")->fetch_object()->RefStoreID;
 
 		if(!$RefStoreID) {
 			// Insert RefStore
 			$stmt = $mysqli->prepare("INSERT INTO 
-				`FoodTech`.`RefStore` 
+				`RefStore` 
 				(`ChainID`, `StoreID`) 
 				VALUES (?, ?)");
 

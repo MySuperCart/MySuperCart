@@ -11,7 +11,7 @@
 		$_ChainName = strval($_PHP_INPUT['ChainName']);
 
 		// Check if ChainID already exists
-		$query = $mysqli->query("SELECT `ChainID` FROM `FoodTech`.`RefChain` WHERE `ChainID` = '$_ChainID' LIMIT 1");
+		$query = $mysqli->query("SELECT `ChainID` FROM `RefChain` WHERE `ChainID` = '$_ChainID' LIMIT 1");
 		if($query->num_rows) {
         	echo json_encode(array('error' => false, 'RefChain' => $query->fetch_object()->ChainID), JSON_PRETTY_PRINT); 
         }
@@ -19,7 +19,7 @@
         else {
 			// STEP 2: Inserting 
 			$stmt = $mysqli->prepare("INSERT INTO 
-				`FoodTech`.`RefChain` 
+				`RefChain` 
 				(`ChainID`,`ChainName`) 
 				VALUES (?,?)");
 

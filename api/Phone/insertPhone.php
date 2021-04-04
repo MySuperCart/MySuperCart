@@ -9,7 +9,7 @@
 
         // STEP 2: Inserting 
         $stmt = $mysqli->prepare("INSERT INTO 
-        	`FoodTech`.`Phone` 
+        	`Phone` 
         	(`PhoneType`, `PhoneNumber`) 
         	VALUES 
         	(1, ?)");

@@ -9,7 +9,7 @@
 
         // STEP 2: Inserting 
         $stmt = $mysqli->prepare("INSERT INTO 
-        	`FoodTech`.`Address` 
+        	`Address` 
         	(`Street1`, `City`, `ZipCode`) 
         	VALUES (?, ?, ?)");
 		

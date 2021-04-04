@@ -7,7 +7,7 @@
 		// requireFields(['tableName','offset']);
 
 		// STEP 1: Select Ad details
-		$query = "SELECT * FROM `FoodTech`.`".$_REQUEST['tableName']."` LIMIT ?,10";
+		$query = "SELECT * FROM `".$_REQUEST['tableName']."` LIMIT ?,10";
 
 		// Binding params
 		$stmt = $mysqli->prepare($query);

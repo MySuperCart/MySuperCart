@@ -81,14 +81,14 @@ CREATE TABLE `Items` (
   KEY `ItemImageID` (`ItemImageID`),
   KEY `CurrencyCode` (`CurrencyCode`),
   KEY `SourceTypeID` (`SourceTypeID`),
-  KEY `ETLLoadID` (`ETLLoadID`),
-  CONSTRAINT `items_ibfk_1` FOREIGN KEY (`RefStoreID`) REFERENCES `RefStore` (`RefStoreID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_2` FOREIGN KEY (`ItemImageID`) REFERENCES `ItemImage` (`ItemImageID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_3` FOREIGN KEY (`CurrencyCode`) REFERENCES `RefCurrency` (`CurrencyCode`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_4` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_5` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_6` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `items_ibfk_7` FOREIGN KEY (`ETLLoadID`) REFERENCES `ETLLoad` (`EtlLoadID`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `ETLLoadID` (`ETLLoadID`)
+  -- CONSTRAINT `items_ibfk_1` FOREIGN KEY (`RefStoreID`) REFERENCES `RefStore` (`RefStoreID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_2` FOREIGN KEY (`ItemImageID`) REFERENCES `ItemImage` (`ItemImageID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_3` FOREIGN KEY (`CurrencyCode`) REFERENCES `RefCurrency` (`CurrencyCode`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_4` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_5` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_6` FOREIGN KEY (`SourceTypeID`) REFERENCES `RefSourceType` (`SourceTypeID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `items_ibfk_7` FOREIGN KEY (`ETLLoadID`) REFERENCES `ETLLoad` (`EtlLoadID`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `Phone`;
@@ -97,8 +97,8 @@ CREATE TABLE `Phone` (
   `PhoneType` int(11) DEFAULT NULL,
   `PhoneNumber` varchar(150) DEFAULT NULL,
   PRIMARY KEY (`PhoneID`),
-  KEY `PhoneType` (`PhoneType`),
-  CONSTRAINT `phone_ibfk_1` FOREIGN KEY (`PhoneType`) REFERENCES `RefPhoneType` (`PhoneTypeID`)
+  KEY `PhoneType` (`PhoneType`)
+  -- CONSTRAINT `phone_ibfk_1` FOREIGN KEY (`PhoneType`) REFERENCES `RefPhoneType` (`PhoneTypeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `RefChain`;
@@ -109,9 +109,9 @@ CREATE TABLE `RefChain` (
   `ChainHQPhoneID` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`ChainID`),
   KEY `ChainHQAddressID` (`ChainHQAddressID`),
-  KEY `ChainHQPhoneID` (`ChainHQPhoneID`),
-  CONSTRAINT `refchain_ibfk_1` FOREIGN KEY (`ChainHQAddressID`) REFERENCES `Address` (`AddressID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `refchain_ibfk_2` FOREIGN KEY (`ChainHQPhoneID`) REFERENCES `Phone` (`PhoneID`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `ChainHQPhoneID` (`ChainHQPhoneID`)
+  -- CONSTRAINT `refchain_ibfk_1` FOREIGN KEY (`ChainHQAddressID`) REFERENCES `Address` (`AddressID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `refchain_ibfk_2` FOREIGN KEY (`ChainHQPhoneID`) REFERENCES `Phone` (`PhoneID`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `RefCurrency`;
@@ -153,10 +153,10 @@ CREATE TABLE `RefStore` (
   PRIMARY KEY (`RefStoreID`),
   KEY `ChainID` (`ChainID`),
   KEY `StoreAddressID` (`StoreAddressID`),
-  KEY `StorePhoneID` (`StorePhoneID`),
-  CONSTRAINT `refstore_ibfk_1` FOREIGN KEY (`ChainID`) REFERENCES `RefChain` (`ChainID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `refstore_ibfk_2` FOREIGN KEY (`StoreAddressID`) REFERENCES `Address` (`AddressID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `refstore_ibfk_3` FOREIGN KEY (`StorePhoneID`) REFERENCES `Phone` (`PhoneID`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `StorePhoneID` (`StorePhoneID`)
+  -- CONSTRAINT `refstore_ibfk_1` FOREIGN KEY (`ChainID`) REFERENCES `RefChain` (`ChainID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `refstore_ibfk_2` FOREIGN KEY (`StoreAddressID`) REFERENCES `Address` (`AddressID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  -- CONSTRAINT `refstore_ibfk_3` FOREIGN KEY (`StorePhoneID`) REFERENCES `Phone` (`PhoneID`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `RefCurrency` (`CurrencyCode`, `CurrencyName`) VALUES ('1', 'Shekel');
