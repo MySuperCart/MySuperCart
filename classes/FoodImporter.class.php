@@ -1,11 +1,12 @@
 <?php
+define("API_DOMAIN", "http://" . $_SERVER['HTTP_HOST'] . '/api');
+define("DIR_DOWNLOAD", $_SERVER['DOCUMENT_ROOT'] . '/temp_downloads/');
+
 /**
 *
 */
 class FoodImporter
 {
-	private $API_DOMAIN = "http://localhost:8686/api";
-	private $DIR_DOWNLOAD = "./temp_downloads/";
 	private $COOKIES;
 	public $LOG_LEVEL;
 	private $MAX_PENDING_FILES_QUEUING = 5;
@@ -162,7 +163,7 @@ class FoodImporter
 		$this->emit(0, "importHtmlPublicPage: $chainName / $fileType ");
 
 		// Use basename() function to return the base name of file
-		$fileName = $this->DIR_DOWNLOAD . $chainName .".html";
+		$fileName = DIR_DOWNLOAD . $chainName .".html";
 		$url = $this->URLS[$chainName][$fileType];
 		// append date() to 'page'
 		$url .= (isset($this->URLS[$chainName]['shouldAppendDateFormatToPage'])) ? 
@@ -213,7 +214,7 @@ class FoodImporter
 			if(strpos($fileName, $fileType) !== 0) continue;
 
 			// local & server file path
-			$localFilePath  = $this->DIR_DOWNLOAD . $fileName;
+			$localFilePath  = DIR_DOWNLOAD . $fileName;
 			$remoteFilePath = '/' . $fileName;
 
 			// try to download a file from server
@@ -249,12 +250,12 @@ class FoodImporter
 			if(isset($headers['Content-Disposition'])) {
 	            $tmp_name = explode('=', $headers['Content-Disposition']);
 	            if ($tmp_name[1])
-	            	return $this->DIR_DOWNLOAD . trim($tmp_name[1],'";\'');
+	            	return DIR_DOWNLOAD . trim($tmp_name[1],'";\'');
 	        }
 	    }
 
 		$stripped_url = preg_replace('/\\?.*/', '', $url);
-	    return $this->DIR_DOWNLOAD . basename($stripped_url);
+	    return DIR_DOWNLOAD . basename($stripped_url);
 	}
 
 	function downloadFilesFromURLSArray($arr) {
@@ -282,11 +283,11 @@ class FoodImporter
 	function pendingFiles($sectionName) {
 		$this->emit(0, "Searching pending files of $sectionName ");
 
-		$files = scandir($this->DIR_DOWNLOAD);
+		$files = scandir(DIR_DOWNLOAD);
 		$pendingFiles = array();
 		foreach ($files as $fileName) {
 			if(strpos($fileName, $sectionName) !== FALSE)
-				$pendingFiles[] = $this->DIR_DOWNLOAD . $fileName;
+				$pendingFiles[] = DIR_DOWNLOAD . $fileName;
 		}
 
 		$this->emit(0, "Found ".count($pendingFiles)." files ");
@@ -516,10 +517,10 @@ class FoodImporter
 		$res = $zip->open($fileName);
 		if ($res === TRUE) {
 			$out_fileName = $zip->getNameIndex(0);
-			$zip->extractTo($this->DIR_DOWNLOAD);
+			$zip->extractTo(DIR_DOWNLOAD);
 			$zip->close();
 			unlink($fileName);
-			return $this->DIR_DOWNLOAD . $out_fileName;
+			return DIR_DOWNLOAD . $out_fileName;
 		}
 	}
 
@@ -545,7 +546,7 @@ class FoodImporter
 
 	private function httpPost($route, $data, $returnJson=true, $toApi=true) {
 
-		$url = $toApi ? $this->API_DOMAIN . $route : $route;
+		$url = $toApi ? API_DOMAIN . $route : $route;
 
 		// use key 'http' even if you send the request to https://...
 		$options = array(
@@ -660,7 +661,7 @@ class FoodImporter
 	function removeDuplicatesOlderFiles() {
 		$this->emit(0, "removeDuplicatesOlderFiles... ");
 
-		$files = scandir($this->DIR_DOWNLOAD);
+		$files = scandir(DIR_DOWNLOAD);
 		$uniqueFiles = array();
 		foreach ($files as $fileName) {
 			preg_match('/([A-Za-z0-9\-]*)-([0-9]*)(.xml)/', $fileName, $matches, PREG_OFFSET_CAPTURE);
@@ -678,7 +679,7 @@ class FoodImporter
 			// compare
 			else if($uniqueFiles[$fileKey] <= $fileDate) {
 				// previous file saved is older, delete it
-				$previousFileName = $this->DIR_DOWNLOAD.$fileKey.'-'.$uniqueFiles[$fileKey].$fileExt;
+				$previousFileName = DIR_DOWNLOAD.$fileKey.'-'.$uniqueFiles[$fileKey].$fileExt;
 				$this->emit(0, "delete $previousFileName");
 				unlink($previousFileName);
 				$uniqueFiles[$fileKey] = $fileDate;
@@ -686,8 +687,8 @@ class FoodImporter
 			}
 			else if($uniqueFiles[$fileKey] > $fileDate) {
 				// the current fileName is older, delete it
-				$this->emit(0, "delete ".$this->DIR_DOWNLOAD.$fileName."");
-				unlink($this->DIR_DOWNLOAD.$fileName);
+				$this->emit(0, "delete ".DIR_DOWNLOAD.$fileName."");
+				unlink(DIR_DOWNLOAD.$fileName);
 				$this->emit(0, "keep ".$uniqueFiles[$fileKey]."");
 			}
 		}

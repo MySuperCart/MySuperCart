@@ -149,7 +149,7 @@
         isQueryRunning("true");
         $( "#result" ).prepend( $('<h4>').text(action + ' ' + arg1 + ' ' + arg2));
         $.get(
-          "//localhost:8686/xml-importer/import.php?action="+action+"&arg1="+arg1+"&arg2="+arg2+"&log_level="+log_level,
+          "/import.php?action="+action+"&arg1="+arg1+"&arg2="+arg2+"&log_level="+log_level,
           function(data) {}
         )
         .done(function(d) {})
