@@ -155,8 +155,8 @@ class FoodImporter
 	function __construct() {}
 
 	function emit($importance, $msg) {
-		// if($this->LOG_LEVEL <= $importance)
-		// 	$result = $this->httpPost($this->SOCKET_API, ['message' => $msg], true, false);
+		if($this->LOG_LEVEL <= $importance)
+			echo $msg . "<br>";
 	}
 
 	private function importHtmlPublicPage($chainName, $fileType) {
@@ -557,6 +557,7 @@ class FoodImporter
 		    )
 		);
 		$context  = stream_context_create($options);
+		$this->emit(0, "httpPost to " . $url);
 		$result = file_get_contents($url, false, $context);
 		if ($result === FALSE) { /* Handle error */ }
 
@@ -578,6 +579,8 @@ class FoodImporter
 		);
 
 		$context = stream_context_create($opts);
+
+		$this->emit(0, "httpGet to " . $url);
 
 		// Open the file using the HTTP headers set above
 		$file = file_get_contents($url, false, $context);

@@ -7,6 +7,7 @@
   <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
+      table { margin: auto }
       td {vertical-align: top; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
@@ -56,9 +57,6 @@
 <body>
   <table>
     <tr>
-      <td>
-        <ul id="messages"></ul>
-      </td>
       <td id="right">
         <div>
           <select id="action">
@@ -155,7 +153,7 @@
         .done(function(d) {})
         .fail(function(error) {})
         .always(function(end) {
-          $( "#result" ).prepend( $('<pre>').text(JSON.stringify(end.responseText, undefined, 2)) );
+          $( "#result" ).prepend( $('<pre>').html(JSON.stringify(end.responseText, undefined, 2)) );
           isQueryRunning("false")
         });
 
