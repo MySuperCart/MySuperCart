@@ -5,7 +5,7 @@ header('Content-Type: text/json;charset=UTF-8');
 libxml_use_internal_errors(true);
 ini_set("memory_limit","256M");
 ini_set('max_execution_time', 3000);
-require_once("../classes/FoodImporter.class.php");
+require_once("./classes/FoodImporter.class.php");
 
 //******* MAIN ******//
 $fi = new FoodImporter();
